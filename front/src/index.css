@@ -1,0 +1,954 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --green-900: #0a1f0a;
+  --green-800: #122112;
+  --green-700: #1a3320;
+  --green-600: #1e3d24;
+  --green-500: #2a5233;
+  --green-400: #3a6b45;
+  --green-300: #4e8a5c;
+  --green-200: #7ab88a;
+  --green-100: #c2dfc8;
+  --green-50:  #eaf3ec;
+
+  --gold-900: #3d2800;
+  --gold-700: #7a5000;
+  --gold-500: #c8922a;
+  --gold-400: #d4a843;
+  --gold-300: #e0c060;
+  --gold-200: #ebd48a;
+  --gold-100: #f5e9c0;
+  --gold-50:  #fdf8ec;
+
+  --white: #ffffff;
+  --off-white: #f8f6f0;
+  --gray-100: #e8e4da;
+  --gray-300: #b8b4aa;
+  --gray-500: #7a7670;
+  --gray-700: #3d3b38;
+  --gray-900: #1a1916;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --shadow-gold: 0 0 20px rgba(200,146,42,0.2);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--green-900);
+  color: var(--off-white);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--green-800); }
+::-webkit-scrollbar-thumb { background: var(--green-500); border-radius: 3px; }
+
+/* ── Loading screen ── */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: var(--green-900);
+}
+
+.loader {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--green-600);
+  border-top-color: var(--gold-400);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Auth pages ── */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(42,82,51,0.4) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(200,146,42,0.08) 0%, transparent 50%),
+    var(--green-900);
+  padding: 2rem;
+}
+
+.auth-card {
+  background: var(--green-800);
+  border: 1px solid var(--green-600);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-logo .flag {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.auth-logo h1 {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: var(--gold-300);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.auth-logo p {
+  font-size: 0.8rem;
+  color: var(--green-200);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+.auth-card h2 {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--off-white);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+/* ── Forms ── */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--green-200);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  background: var(--green-700);
+  border: 1px solid var(--green-500);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.875rem;
+  color: var(--off-white);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--gold-400);
+  box-shadow: 0 0 0 3px rgba(212,168,67,0.15);
+}
+
+.form-group input::placeholder { color: var(--gray-500); }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-400));
+  color: var(--green-900);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--gold-400), var(--gold-300));
+  box-shadow: var(--shadow-gold);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--green-600);
+  color: var(--off-white);
+  border: 1px solid var(--green-400);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--green-500);
+}
+
+.btn-danger {
+  background: rgba(180,50,50,0.2);
+  color: #f87272;
+  border: 1px solid rgba(180,50,50,0.4);
+}
+.btn-danger:hover:not(:disabled) { background: rgba(180,50,50,0.35); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--green-200);
+  border: 1px solid var(--green-500);
+}
+.btn-ghost:hover:not(:disabled) { background: var(--green-700); color: var(--off-white); }
+
+.btn-full { width: 100%; }
+.btn-sm { padding: 0.4rem 0.85rem; font-size: 0.82rem; }
+
+/* ── Error / Success alerts ── */
+.alert {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+}
+.alert-error {
+  background: rgba(180,50,50,0.15);
+  border: 1px solid rgba(180,50,50,0.4);
+  color: #fca5a5;
+}
+.alert-success {
+  background: rgba(74,150,90,0.15);
+  border: 1px solid rgba(74,150,90,0.4);
+  color: var(--green-100);
+}
+.alert-info {
+  background: rgba(200,146,42,0.1);
+  border: 1px solid rgba(200,146,42,0.3);
+  color: var(--gold-200);
+}
+
+/* ── Layout ── */
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.navbar {
+  background: var(--green-800);
+  border-bottom: 1px solid var(--green-600);
+  padding: 0 1.5rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+}
+
+.navbar-brand .brand-icon { font-size: 1.4rem; }
+
+.navbar-brand .brand-text {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--gold-300);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.nav-link {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--green-200);
+  text-decoration: none;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-md);
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
+}
+.nav-link:hover { color: var(--off-white); background: var(--green-700); }
+.nav-link.active { color: var(--gold-300); background: var(--green-700); }
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navbar-username {
+  font-size: 0.85rem;
+  color: var(--green-200);
+}
+
+.main-content {
+  flex: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 2rem 1.5rem;
+}
+
+/* ── Page headers ── */
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--gold-300);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.page-header p {
+  color: var(--green-200);
+  font-size: 0.9rem;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--green-800);
+  border: 1px solid var(--green-600);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Leaderboard ── */
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--green-300);
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--green-600);
+}
+
+.leaderboard-table th.right { text-align: right; }
+
+.team-row {
+  border-bottom: 1px solid var(--green-700);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.team-row:hover { background: var(--green-700); }
+.team-row:last-child { border-bottom: none; }
+
+.team-row td {
+  padding: 0.9rem 1rem;
+  vertical-align: middle;
+}
+
+.rank-cell {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  width: 50px;
+}
+
+.rank-1 { color: var(--gold-300); }
+.rank-2 { color: var(--gray-300); }
+.rank-3 { color: #cd8b5a; }
+.rank-other { color: var(--green-300); }
+
+.team-name-cell .team-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--off-white);
+}
+.team-name-cell .owner {
+  font-size: 0.78rem;
+  color: var(--green-300);
+  margin-top: 1px;
+}
+
+.dk-points {
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--gold-300);
+}
+
+.dk-points-small {
+  font-size: 0.8rem;
+  color: var(--green-300);
+  text-align: right;
+}
+
+/* ── Expanded team golfers ── */
+.team-golfers-row td {
+  padding: 0 1rem 1rem;
+}
+
+.golfer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--green-700);
+}
+
+.golfer-chip {
+  background: var(--green-700);
+  border: 1px solid var(--green-500);
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.golfer-chip .chip-name {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--off-white);
+}
+
+.golfer-chip .chip-pts {
+  font-size: 0.78rem;
+  color: var(--gold-300);
+  font-weight: 600;
+}
+
+.golfer-chip .chip-score {
+  font-size: 0.75rem;
+  color: var(--green-300);
+}
+
+.chip-cut {
+  background: rgba(180,50,50,0.15);
+  border-color: rgba(180,50,50,0.3);
+}
+.chip-cut .chip-name { color: var(--gray-300); text-decoration: line-through; }
+
+/* ── Draft page ── */
+.draft-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .draft-layout { grid-template-columns: 1fr; }
+}
+
+.salary-cap-bar {
+  background: var(--green-700);
+  border-radius: 999px;
+  height: 8px;
+  margin: 0.5rem 0;
+  overflow: hidden;
+}
+
+.salary-cap-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease, background 0.3s;
+}
+
+.salary-cap-fill.safe   { background: var(--green-300); }
+.salary-cap-fill.warn   { background: var(--gold-400); }
+.salary-cap-fill.over   { background: #f87272; }
+
+.cap-numbers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--green-300);
+  margin-top: 0.25rem;
+}
+
+.cap-numbers .spent { color: var(--off-white); font-weight: 600; }
+.cap-numbers .over-text { color: #f87272; font-weight: 600; }
+
+/* ── Golfer list ── */
+.golfer-search {
+  margin-bottom: 1rem;
+}
+
+.golfer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.golfer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--green-700);
+  border: 1px solid var(--green-600);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.875rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.golfer-row:hover:not(.selected):not(.disabled) {
+  border-color: var(--green-400);
+  background: var(--green-600);
+}
+
+.golfer-row.selected {
+  background: rgba(200,146,42,0.12);
+  border-color: var(--gold-500);
+}
+
+.golfer-row.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.golfer-row-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.golfer-rank {
+  font-size: 0.72rem;
+  color: var(--green-300);
+  width: 20px;
+  text-align: center;
+}
+
+.golfer-info .golfer-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--off-white);
+}
+
+.golfer-info .golfer-country {
+  font-size: 0.75rem;
+  color: var(--green-300);
+}
+
+.golfer-row-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.golfer-salary {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--gold-300);
+  font-weight: 600;
+}
+
+.check-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--gold-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green-900);
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Roster sidebar ── */
+.roster-card {
+  position: sticky;
+  top: 76px;
+}
+
+.roster-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.roster-slot {
+  background: var(--green-700);
+  border: 1px dashed var(--green-500);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+}
+
+.roster-slot.filled {
+  border-style: solid;
+  border-color: var(--gold-500);
+  background: rgba(200,146,42,0.08);
+}
+
+.slot-label {
+  font-size: 0.72rem;
+  color: var(--green-300);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.slot-player {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--off-white);
+}
+
+.slot-salary {
+  font-size: 0.8rem;
+  color: var(--gold-400);
+}
+
+.slot-remove {
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.slot-remove:hover { color: #f87272; }
+
+.team-name-input {
+  margin-bottom: 1rem;
+}
+
+/* ── My Team ── */
+.my-team-golfers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.my-golfer-card {
+  background: var(--green-700);
+  border: 1px solid var(--green-500);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.my-golfer-name {
+  font-weight: 600;
+  color: var(--off-white);
+  margin-bottom: 2px;
+}
+
+.my-golfer-meta {
+  font-size: 0.78rem;
+  color: var(--green-300);
+}
+
+.round-pts {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.rpt {
+  font-size: 0.72rem;
+  background: var(--green-600);
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: var(--green-100);
+}
+
+.rpt.positive { color: var(--gold-300); }
+.rpt.negative { color: #f87272; }
+
+.my-golfer-total {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--gold-300);
+  text-align: right;
+}
+
+.my-golfer-salary {
+  font-size: 0.78rem;
+  color: var(--green-300);
+  text-align: right;
+}
+
+.my-golfer-cut {
+  border-color: rgba(180,50,50,0.3);
+  opacity: 0.7;
+}
+
+.cut-badge {
+  font-size: 0.68rem;
+  background: rgba(180,50,50,0.25);
+  color: #fca5a5;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 0.4rem;
+}
+
+/* ── Stats row ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--green-700);
+  border: 1px solid var(--green-600);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--gold-300);
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--green-300);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ── Admin ── */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.admin-section h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--gold-200);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--green-600);
+}
+
+.admin-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.users-table th {
+  text-align: left;
+  color: var(--green-300);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--green-600);
+}
+
+.users-table td {
+  padding: 0.5rem;
+  color: var(--off-white);
+  border-bottom: 1px solid var(--green-700);
+}
+
+.badge {
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.badge-gold {
+  background: rgba(200,146,42,0.2);
+  color: var(--gold-300);
+  border: 1px solid rgba(200,146,42,0.4);
+}
+
+.badge-green {
+  background: rgba(74,150,90,0.2);
+  color: var(--green-100);
+  border: 1px solid rgba(74,150,90,0.3);
+}
+
+.badge-red {
+  background: rgba(180,50,50,0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(180,50,50,0.3);
+}
+
+/* ── Locked banner ── */
+.locked-banner {
+  background: rgba(200,146,42,0.1);
+  border: 1px solid rgba(200,146,42,0.3);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: var(--gold-200);
+  font-size: 0.9rem;
+}
+
+/* ── Tournament banner ── */
+.tournament-banner {
+  background: linear-gradient(135deg, var(--green-700), var(--green-600));
+  border: 1px solid var(--green-500);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.banner-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--gold-300);
+  font-weight: 700;
+}
+
+.banner-sub {
+  font-size: 0.82rem;
+  color: var(--green-200);
+  margin-top: 2px;
+}
+
+.round-pills {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.round-pill {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.round-pill.complete {
+  background: rgba(74,150,90,0.25);
+  color: var(--green-100);
+  border: 1px solid rgba(74,150,90,0.4);
+}
+
+.round-pill.current {
+  background: rgba(200,146,42,0.2);
+  color: var(--gold-200);
+  border: 1px solid rgba(200,146,42,0.4);
+}
+
+.round-pill.upcoming {
+  background: var(--green-700);
+  color: var(--green-300);
+  border: 1px solid var(--green-600);
+}
+
+/* ── Divider ── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--green-600);
+  margin: 1.5rem 0;
+}
+
+/* ── Misc ── */
+.text-gold   { color: var(--gold-300); }
+.text-muted  { color: var(--green-300); }
+.text-center { text-align: center; }
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+
+.flex { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-1 { gap: 0.5rem; }
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--green-300);
+}
+.empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.empty-state h3 { color: var(--off-white); margin-bottom: 0.5rem; }

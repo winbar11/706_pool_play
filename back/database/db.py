@@ -94,7 +94,7 @@ def init_db():
 
         INSERT OR IGNORE INTO tournament_settings VALUES ('teams_locked', '0');
         INSERT OR IGNORE INTO tournament_settings VALUES ('current_round', '0');
-        INSERT OR IGNORE INTO tournament_settings VALUES ('tournament_year', '2025');
+        INSERT OR IGNORE INTO tournament_settings VALUES ('tournament_year', '2026');
     """)
 
     conn.commit()
@@ -103,7 +103,7 @@ def init_db():
 
 
 def _seed_golfers():
-    """Seed the 2025 Masters field with realistic DK salaries."""
+    """Seed the 2026 Masters field with realistic DK salaries."""
     golfers = [
         # (espn_id, name, salary, world_rank, country)
         ("4848", "Scottie Scheffler",   11800, 1,  "USA"),
