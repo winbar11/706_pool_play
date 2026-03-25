@@ -4,7 +4,6 @@
 
 ## Scoring
 
-** Scoring Reference **
 | Scoring event | Points |
 |---------------|--------|
 | Double Eagle  | +20    |
