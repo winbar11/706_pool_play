@@ -1,6 +1,6 @@
 import { Outlet, NavLink, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import logo from "../static/706_pool_logo.png";
+import logo from "../static/706_pool_logo.svg";
 
 export default function Layout() {
   const { user, logout } = useAuth();

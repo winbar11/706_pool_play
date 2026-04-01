@@ -6,6 +6,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 Added
 [0.0.4] - 2026.04.01
 - added entire field for Valero Texas Open testing
+- converted logo to .svg image type
 
 Added
 [0.0.3] - 2026.04.01
