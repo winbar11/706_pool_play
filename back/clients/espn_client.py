@@ -10,9 +10,13 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# ESPN Masters tournament ID (The Masters = 2018)
-MASTERS_TOURNAMENT_ID = "401580349"  # UPDATE EACH YEAR
-LEADERBOARD_URL = f"https://site.api.espn.com/apis/site/v2/sports/golf/pga/leaderboard?event={MASTERS_TOURNAMENT_ID}"
+# ESPN Masters tournament ID (yr. 2026) --> https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard
+# MASTERS_TOURNAMENT_ID = "401811941"
+
+# VALERO TEXAS OPEN TOURNAMENT
+MASTERS_TOURNAMENT_ID = "401811940"
+
+LEADERBOARD_URL = f"https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event={MASTERS_TOURNAMENT_ID}"
 SCORECARD_URL   = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scorecards/{athlete_id}?event={event_id}"
 
 async def fetch_leaderboard() -> Optional[dict]:
@@ -42,22 +46,57 @@ def parse_leaderboard(data: dict) -> list[dict]:
     try:
         events = data.get("events", [])
         if not events:
+            logger.warning("No events in ESPN response")
             return []
-        competitors = events[0].get("competitions", [{}])[0].get("competitors", [])
+
+        competitions = events[0].get("competitions", [])
+        if not competitions:
+            logger.warning("No competitions in ESPN event")
+            return []
+
+        competitors   = competitions[0].get("competitors", [])
+        current_round = competitions[0].get("status", {}).get("period", 0)
+
         for c in competitors:
-            athlete = c.get("athlete", {})
-            stats   = {s["name"]: s.get("displayValue", "0")
-                        for s in c.get("statistics", [])}
+            athlete   = c.get("athlete", {})
+            status    = c.get("status", {})
+            stat_type = status.get("type", {})
+            pos       = status.get("position", {})
+
+            # STATUS_CUT / STATUS_WD / STATUS_DQ = missed cut
+            status_name = stat_type.get("name", "")
+            made_cut = 0 if status_name in ("STATUS_CUT", "STATUS_WD", "STATUS_DQ") else 1
+
+            # Strip T from "T4", "T26" to get numeric position
+            pos_display = pos.get("displayName", "")
+            finish_pos  = _parse_position(pos_display)
+
+            # Pull round scores from linescores using period field
+            linescores   = c.get("linescores", [])
+            round_scores = {}
+            for ls in linescores:
+                period = ls.get("period")
+                val    = ls.get("value")
+                if period and val is not None:
+                    round_scores[period] = int(val)
+
             players.append({
-                "espn_id":        str(athlete.get("id", "")),
-                "name":           athlete.get("displayName", ""),
-                "finish_position": c.get("status", {}).get("position", {}).get("id"),
-                "total_score":    _parse_score(c.get("score", {}).get("displayValue", "E")),
-                "current_round":  _detect_round(c),
-                "made_cut":       1 if c.get("status", {}).get("type", {}).get("id") not in ("C", "W") else 0,
+                "espn_id":         str(athlete.get("id", "")),
+                "name":            athlete.get("displayName", ""),
+                "finish_position": finish_pos,
+                "total_score":     _parse_score(c.get("score", {}).get("displayValue", "E")),
+                "current_round":   current_round,
+                "made_cut":        made_cut,
+                "round1_score":    round_scores.get(1),
+                "round2_score":    round_scores.get(2),
+                "round3_score":    round_scores.get(3),
+                "round4_score":    round_scores.get(4),
             })
+
     except Exception as e:
-        logger.error(f"Parse leaderboard error: {e}")
+        logger.error(f"Parse leaderboard error: {e}", exc_info=True)
+
+    logger.info(f"Parsed {len(players)} players from ESPN leaderboard")
     return players
 
 def parse_scorecard(data: dict, round_num: int) -> Optional[dict]:
@@ -73,16 +112,16 @@ def parse_scorecard(data: dict, round_num: int) -> Optional[dict]:
         rounds = data.get("rounds", [])
         if round_num > len(rounds):
             return result
-        rd = rounds[round_num - 1]
+        rd    = rounds[round_num - 1]
         holes = rd.get("linescores", [])
-        total_strokes = 0
+        total_strokes     = 0
         consecutive_under = 0
-        max_consecutive = 0
-        has_bogey = False
+        max_consecutive   = 0
+        has_bogey         = False
 
         for hole in holes:
-            par        = int(hole.get("par", 4))
-            value_raw  = hole.get("value", "")
+            par       = int(hole.get("par", 4))
+            value_raw = hole.get("value", "")
             try:
                 strokes = int(value_raw)
             except (ValueError, TypeError):
@@ -137,6 +176,52 @@ def _parse_score(s: str) -> Optional[int]:
     except ValueError:
         return None
 
+def _parse_position(pos: str) -> Optional[int]:
+    """Convert 'T4', '1', 'T26' etc to integer."""
+    if not pos or pos in ("-", "--"):
+        return None
+    pos = pos.lstrip("T")
+    try:
+        return int(pos)
+    except ValueError:
+        return None
+
 def _detect_round(competitor: dict) -> int:
     linescores = competitor.get("linescores", [])
     return len([l for l in linescores if l.get("value") not in (None, "", "--")])
+
+def calc_hole_stats_from_rounds(round_scores: dict) -> dict:
+    """
+    ESPN leaderboard only gives round totals, not hole-by-hole.
+    Estimates birdies/bogeys from score vs par for DK calc.
+    Use Admin manual entry for exact hole stats.
+    """
+    results = {}
+    PAR = 72
+
+    for r, score in round_scores.items():
+        if score is None:
+            continue
+        diff = score - PAR
+        if diff < 0:
+            birdies = abs(diff)
+            bogeys  = 0
+        else:
+            birdies = 0
+            bogeys  = diff
+
+        results[r] = {
+            "birdies":       birdies,
+            "eagles":        0,
+            "bogeys":        bogeys,
+            "doubles":       0,
+            "worse":         0,
+            "pars":          PAR - birdies - bogeys,
+            "ace":           0,
+            "double_eagle":  0,
+            "bogey_free":    1 if bogeys == 0 else 0,
+            "birdie_streak": 0,
+            "round_score":   score,
+        }
+
+    return results

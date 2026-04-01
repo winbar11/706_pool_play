@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import logo from "../static/706_pool_logo.png";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -29,9 +30,7 @@ export default function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="flag">⛳</div>
-          <h1>Masters 706 Pool</h1>
-          <p>2026</p>
+          <img src={logo} alt="706 Masters Pool" height="150" style={{ objectFit: "contain" }} />
         </div>
 
         <h2>Sign in</h2>

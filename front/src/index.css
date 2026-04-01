@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 :root {
+  --cream:      #f0ede4;
+  --cream-dark: #e2ddd3;
+
   --green-900: #0a1f0a;
   --green-800: #122112;
   --green-700: #1a3320;
@@ -16,18 +19,22 @@
   --gold-700: #7a5000;
   --gold-500: #c8922a;
   --gold-400: #d4a843;
-  --gold-300: #e0c060;
-  --gold-200: #ebd48a;
+  --gold-300: #c8922a;
+  --gold-200: #9a6c18;
   --gold-100: #f5e9c0;
   --gold-50:  #fdf8ec;
 
-  --white: #ffffff;
+  --white:     #ffffff;
   --off-white: #f8f6f0;
-  --gray-100: #e8e4da;
-  --gray-300: #b8b4aa;
-  --gray-500: #7a7670;
-  --gray-700: #3d3b38;
-  --gray-900: #1a1916;
+  --gray-100:  #e8e4da;
+  --gray-300:  #b8b4aa;
+  --gray-500:  #7a7670;
+  --gray-700:  #3d3b38;
+  --gray-900:  #1a1916;
+
+  --text-primary:   #1a3d20;
+  --text-secondary: #3a5c42;
+  --text-muted:     #6a8a6e;
 
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
@@ -37,10 +44,10 @@
   --radius-lg: 12px;
   --radius-xl: 20px;
 
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
-  --shadow-gold: 0 0 20px rgba(200,146,42,0.2);
+  --shadow-sm:   0 1px 4px rgba(26,61,32,0.10);
+  --shadow-md:   0 4px 16px rgba(26,61,32,0.13);
+  --shadow-lg:   0 8px 32px rgba(26,61,32,0.18);
+  --shadow-gold: 0 0 20px rgba(200,146,42,0.25);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,8 +56,8 @@ html { font-size: 16px; }
 
 body {
   font-family: var(--font-body);
-  background-color: var(--green-900);
-  color: var(--off-white);
+  background-color: var(--cream);
+  color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -58,8 +65,8 @@ body {
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--green-800); }
-::-webkit-scrollbar-thumb { background: var(--green-500); border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--cream-dark); }
+::-webkit-scrollbar-thumb { background: var(--green-400); border-radius: 3px; }
 
 /* ── Loading screen ── */
 .loading-screen {
@@ -67,15 +74,15 @@ body {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: var(--green-900);
+  background: var(--cream);
 }
 
 .loader {
   display: inline-block;
   width: 36px;
   height: 36px;
-  border: 3px solid var(--green-600);
-  border-top-color: var(--gold-400);
+  border: 3px solid var(--cream-dark);
+  border-top-color: var(--gold-500);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -88,16 +95,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(42,82,51,0.4) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(200,146,42,0.08) 0%, transparent 50%),
-    var(--green-900);
+  background: var(--cream);
   padding: 2rem;
 }
 
 .auth-card {
-  background: var(--green-800);
-  border: 1px solid var(--green-600);
+  background: var(--white);
+  border: 1px solid #c8922a;
   border-radius: var(--radius-xl);
   padding: 2.5rem;
   width: 100%;
@@ -110,22 +114,21 @@ body {
   margin-bottom: 2rem;
 }
 
-.auth-logo .flag {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+.auth-logo img {
+  border-radius: var(--radius-lg);
 }
 
 .auth-logo h1 {
   font-family: var(--font-display);
   font-size: 1.75rem;
-  color: var(--gold-300);
+  color: var(--text-primary);
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
 .auth-logo p {
   font-size: 0.8rem;
-  color: var(--green-200);
+  color: var(--text-muted);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-top: 0.25rem;
@@ -134,7 +137,7 @@ body {
 .auth-card h2 {
   font-family: var(--font-display);
   font-size: 1.4rem;
-  color: var(--off-white);
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
   font-weight: 600;
 }
@@ -148,7 +151,7 @@ body {
   display: block;
   font-size: 0.78rem;
   font-weight: 500;
-  color: var(--green-200);
+  color: var(--text-secondary);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   margin-bottom: 0.4rem;
@@ -157,11 +160,11 @@ body {
 .form-group input,
 .form-group select {
   width: 100%;
-  background: var(--green-700);
-  border: 1px solid var(--green-500);
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
   border-radius: var(--radius-md);
   padding: 0.65rem 0.875rem;
-  color: var(--off-white);
+  color: var(--text-primary);
   font-family: var(--font-body);
   font-size: 0.95rem;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -170,8 +173,8 @@ body {
 
 .form-group input:focus,
 .form-group select:focus {
-  border-color: var(--gold-400);
-  box-shadow: 0 0 0 3px rgba(212,168,67,0.15);
+  border-color: var(--gold-500);
+  box-shadow: 0 0 0 3px rgba(200,146,42,0.15);
 }
 
 .form-group input::placeholder { color: var(--gray-500); }
@@ -198,39 +201,42 @@ body {
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--gold-500), var(--gold-400));
-  color: var(--green-900);
+  background: var(--green-600);
+  color: var(--cream);
   font-weight: 600;
   box-shadow: var(--shadow-sm);
 }
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--gold-400), var(--gold-300));
-  box-shadow: var(--shadow-gold);
+  background: var(--green-500);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background: var(--green-600);
-  color: var(--off-white);
-  border: 1px solid var(--green-400);
+  background: var(--cream-dark);
+  color: var(--text-primary);
+  border: 1px solid var(--gray-300);
 }
 .btn-secondary:hover:not(:disabled) {
-  background: var(--green-500);
+  background: var(--gray-100);
 }
 
 .btn-danger {
-  background: rgba(180,50,50,0.2);
-  color: #f87272;
-  border: 1px solid rgba(180,50,50,0.4);
+  background: rgba(180,50,50,0.08);
+  color: #b91c1c;
+  border: 1px solid rgba(180,50,50,0.3);
 }
-.btn-danger:hover:not(:disabled) { background: rgba(180,50,50,0.35); }
+.btn-danger:hover:not(:disabled) { background: rgba(180,50,50,0.15); }
 
 .btn-ghost {
   background: transparent;
-  color: var(--green-200);
+  color: var(--text-primary);
   border: 1px solid var(--green-500);
 }
-.btn-ghost:hover:not(:disabled) { background: var(--green-700); color: var(--off-white); }
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(26,61,32,0.06);
+  color: var(--green-600);
+}
 
 .btn-full { width: 100%; }
 .btn-sm { padding: 0.4rem 0.85rem; font-size: 0.82rem; }
@@ -243,17 +249,17 @@ body {
   margin-bottom: 1rem;
 }
 .alert-error {
-  background: rgba(180,50,50,0.15);
-  border: 1px solid rgba(180,50,50,0.4);
-  color: #fca5a5;
+  background: rgba(180,50,50,0.08);
+  border: 1px solid rgba(180,50,50,0.3);
+  color: #b91c1c;
 }
 .alert-success {
-  background: rgba(74,150,90,0.15);
-  border: 1px solid rgba(74,150,90,0.4);
-  color: var(--green-100);
+  background: rgba(26,61,32,0.08);
+  border: 1px solid rgba(26,61,32,0.3);
+  color: var(--green-700);
 }
 .alert-info {
-  background: rgba(200,146,42,0.1);
+  background: rgba(200,146,42,0.08);
   border: 1px solid rgba(200,146,42,0.3);
   color: var(--gold-200);
 }
@@ -266,17 +272,17 @@ body {
 }
 
 .navbar {
-  background: var(--green-800);
-  border-bottom: 1px solid var(--green-600);
+  background: var(--cream);
+  border-bottom: 2px solid #1a3d20;
   padding: 0 1.5rem;
-  height: 60px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  box-shadow: 0 2px 8px rgba(26,61,32,0.08);
 }
 
 .navbar-brand {
@@ -291,7 +297,7 @@ body {
 .navbar-brand .brand-text {
   font-family: var(--font-display);
   font-size: 1.15rem;
-  color: var(--gold-300);
+  color: var(--text-primary);
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -305,15 +311,22 @@ body {
 .nav-link {
   font-size: 0.88rem;
   font-weight: 500;
-  color: var(--green-200);
+  color: var(--text-primary);
   text-decoration: none;
   padding: 0.4rem 0.85rem;
   border-radius: var(--radius-md);
   transition: all 0.15s;
   letter-spacing: 0.02em;
 }
-.nav-link:hover { color: var(--off-white); background: var(--green-700); }
-.nav-link.active { color: var(--gold-300); background: var(--green-700); }
+.nav-link:hover {
+  color: var(--green-600);
+  background: rgba(26,61,32,0.07);
+}
+.nav-link.active {
+  color: var(--gold-500);
+  background: rgba(200,146,42,0.1);
+  font-weight: 600;
+}
 
 .navbar-user {
   display: flex;
@@ -323,7 +336,7 @@ body {
 
 .navbar-username {
   font-size: 0.85rem;
-  color: var(--green-200);
+  color: var(--text-secondary);
 }
 
 .main-content {
@@ -342,20 +355,20 @@ body {
 .page-header h1 {
   font-family: var(--font-display);
   font-size: 2rem;
-  color: var(--gold-300);
+  color: var(--text-primary);
   font-weight: 700;
   margin-bottom: 0.25rem;
 }
 
 .page-header p {
-  color: var(--green-200);
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
 /* ── Cards ── */
 .card {
-  background: var(--green-800);
-  border: 1px solid var(--green-600);
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   box-shadow: var(--shadow-sm);
@@ -373,19 +386,19 @@ body {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--green-300);
+  color: var(--text-muted);
   padding: 0.6rem 1rem;
-  border-bottom: 1px solid var(--green-600);
+  border-bottom: 1px solid var(--cream-dark);
 }
 
 .leaderboard-table th.right { text-align: right; }
 
 .team-row {
-  border-bottom: 1px solid var(--green-700);
+  border-bottom: 1px solid var(--cream-dark);
   transition: background 0.15s;
   cursor: pointer;
 }
-.team-row:hover { background: var(--green-700); }
+.team-row:hover { background: var(--cream); }
 .team-row:last-child { border-bottom: none; }
 
 .team-row td {
@@ -400,19 +413,19 @@ body {
   width: 50px;
 }
 
-.rank-1 { color: var(--gold-300); }
-.rank-2 { color: var(--gray-300); }
-.rank-3 { color: #cd8b5a; }
-.rank-other { color: var(--green-300); }
+.rank-1 { color: var(--gold-500); }
+.rank-2 { color: var(--gray-500); }
+.rank-3 { color: #a0522d; }
+.rank-other { color: var(--text-muted); }
 
 .team-name-cell .team-name {
   font-weight: 600;
   font-size: 0.95rem;
-  color: var(--off-white);
+  color: var(--text-primary);
 }
 .team-name-cell .owner {
   font-size: 0.78rem;
-  color: var(--green-300);
+  color: var(--text-muted);
   margin-top: 1px;
 }
 
@@ -421,12 +434,12 @@ body {
   font-family: var(--font-display);
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--gold-300);
+  color: var(--green-600);
 }
 
 .dk-points-small {
   font-size: 0.8rem;
-  color: var(--green-300);
+  color: var(--text-muted);
   text-align: right;
 }
 
@@ -440,12 +453,12 @@ body {
   flex-wrap: wrap;
   gap: 0.5rem;
   padding-top: 0.5rem;
-  border-top: 1px solid var(--green-700);
+  border-top: 1px solid var(--cream-dark);
 }
 
 .golfer-chip {
-  background: var(--green-700);
-  border: 1px solid var(--green-500);
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
   border-radius: var(--radius-md);
   padding: 0.35rem 0.75rem;
   display: flex;
@@ -456,25 +469,25 @@ body {
 .golfer-chip .chip-name {
   font-size: 0.82rem;
   font-weight: 500;
-  color: var(--off-white);
+  color: var(--text-primary);
 }
 
 .golfer-chip .chip-pts {
   font-size: 0.78rem;
-  color: var(--gold-300);
+  color: var(--green-600);
   font-weight: 600;
 }
 
 .golfer-chip .chip-score {
   font-size: 0.75rem;
-  color: var(--green-300);
+  color: var(--text-muted);
 }
 
 .chip-cut {
-  background: rgba(180,50,50,0.15);
-  border-color: rgba(180,50,50,0.3);
+  background: rgba(180,50,50,0.05);
+  border-color: rgba(180,50,50,0.2);
 }
-.chip-cut .chip-name { color: var(--gray-300); text-decoration: line-through; }
+.chip-cut .chip-name { color: var(--gray-500); text-decoration: line-through; }
 
 /* ── Draft page ── */
 .draft-layout {
@@ -489,7 +502,7 @@ body {
 }
 
 .salary-cap-bar {
-  background: var(--green-700);
+  background: var(--cream-dark);
   border-radius: 999px;
   height: 8px;
   margin: 0.5rem 0;
@@ -502,25 +515,23 @@ body {
   transition: width 0.3s ease, background 0.3s;
 }
 
-.salary-cap-fill.safe   { background: var(--green-300); }
-.salary-cap-fill.warn   { background: var(--gold-400); }
-.salary-cap-fill.over   { background: #f87272; }
+.salary-cap-fill.safe   { background: var(--green-400); }
+.salary-cap-fill.warn   { background: var(--gold-500); }
+.salary-cap-fill.over   { background: #dc2626; }
 
 .cap-numbers {
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
-  color: var(--green-300);
+  color: var(--text-muted);
   margin-top: 0.25rem;
 }
 
-.cap-numbers .spent { color: var(--off-white); font-weight: 600; }
-.cap-numbers .over-text { color: #f87272; font-weight: 600; }
+.cap-numbers .spent { color: var(--text-primary); font-weight: 600; }
+.cap-numbers .over-text { color: #dc2626; font-weight: 600; }
 
 /* ── Golfer list ── */
-.golfer-search {
-  margin-bottom: 1rem;
-}
+.golfer-search { margin-bottom: 1rem; }
 
 .golfer-list {
   display: flex;
@@ -535,8 +546,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--green-700);
-  border: 1px solid var(--green-600);
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
   border-radius: var(--radius-md);
   padding: 0.65rem 0.875rem;
   cursor: pointer;
@@ -546,12 +557,12 @@ body {
 
 .golfer-row:hover:not(.selected):not(.disabled) {
   border-color: var(--green-400);
-  background: var(--green-600);
+  background: var(--white);
 }
 
 .golfer-row.selected {
-  background: rgba(200,146,42,0.12);
-  border-color: var(--gold-500);
+  background: rgba(26,61,32,0.06);
+  border-color: var(--green-500);
 }
 
 .golfer-row.disabled {
@@ -567,7 +578,7 @@ body {
 
 .golfer-rank {
   font-size: 0.72rem;
-  color: var(--green-300);
+  color: var(--text-muted);
   width: 20px;
   text-align: center;
 }
@@ -575,12 +586,12 @@ body {
 .golfer-info .golfer-name {
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--off-white);
+  color: var(--text-primary);
 }
 
 .golfer-info .golfer-country {
   font-size: 0.75rem;
-  color: var(--green-300);
+  color: var(--text-muted);
 }
 
 .golfer-row-right {
@@ -592,7 +603,7 @@ body {
 .golfer-salary {
   font-family: var(--font-display);
   font-size: 0.9rem;
-  color: var(--gold-300);
+  color: var(--gold-500);
   font-weight: 600;
 }
 
@@ -600,11 +611,11 @@ body {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--gold-500);
+  background: var(--green-500);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--green-900);
+  color: var(--cream);
   font-size: 0.7rem;
   font-weight: 700;
   flex-shrink: 0;
@@ -613,7 +624,7 @@ body {
 /* ── Roster sidebar ── */
 .roster-card {
   position: sticky;
-  top: 76px;
+  top: 80px;
 }
 
 .roster-slots {
@@ -624,8 +635,8 @@ body {
 }
 
 .roster-slot {
-  background: var(--green-700);
-  border: 1px dashed var(--green-500);
+  background: var(--cream);
+  border: 1px dashed var(--gray-300);
   border-radius: var(--radius-md);
   padding: 0.6rem 0.875rem;
   display: flex;
@@ -636,13 +647,13 @@ body {
 
 .roster-slot.filled {
   border-style: solid;
-  border-color: var(--gold-500);
-  background: rgba(200,146,42,0.08);
+  border-color: var(--green-500);
+  background: rgba(26,61,32,0.04);
 }
 
 .slot-label {
   font-size: 0.72rem;
-  color: var(--green-300);
+  color: var(--text-muted);
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
@@ -650,12 +661,12 @@ body {
 .slot-player {
   font-size: 0.88rem;
   font-weight: 500;
-  color: var(--off-white);
+  color: var(--text-primary);
 }
 
 .slot-salary {
   font-size: 0.8rem;
-  color: var(--gold-400);
+  color: var(--gold-500);
 }
 
 .slot-remove {
@@ -669,11 +680,9 @@ body {
   border-radius: 4px;
   transition: color 0.15s;
 }
-.slot-remove:hover { color: #f87272; }
+.slot-remove:hover { color: #dc2626; }
 
-.team-name-input {
-  margin-bottom: 1rem;
-}
+.team-name-input { margin-bottom: 1rem; }
 
 /* ── My Team ── */
 .my-team-golfers {
@@ -684,8 +693,8 @@ body {
 }
 
 .my-golfer-card {
-  background: var(--green-700);
-  border: 1px solid var(--green-500);
+  background: var(--cream);
+  border: 1px solid var(--cream-dark);
   border-radius: var(--radius-md);
   padding: 0.875rem 1rem;
   display: grid;
@@ -696,13 +705,13 @@ body {
 
 .my-golfer-name {
   font-weight: 600;
-  color: var(--off-white);
+  color: var(--text-primary);
   margin-bottom: 2px;
 }
 
 .my-golfer-meta {
   font-size: 0.78rem;
-  color: var(--green-300);
+  color: var(--text-muted);
 }
 
 .round-pts {
@@ -714,38 +723,38 @@ body {
 
 .rpt {
   font-size: 0.72rem;
-  background: var(--green-600);
+  background: var(--cream-dark);
   border-radius: 4px;
   padding: 2px 6px;
-  color: var(--green-100);
+  color: var(--text-secondary);
 }
 
-.rpt.positive { color: var(--gold-300); }
-.rpt.negative { color: #f87272; }
+.rpt.positive { color: var(--green-600); font-weight: 600; }
+.rpt.negative { color: #b91c1c; }
 
 .my-golfer-total {
   font-family: var(--font-display);
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--gold-300);
+  color: var(--green-600);
   text-align: right;
 }
 
 .my-golfer-salary {
   font-size: 0.78rem;
-  color: var(--green-300);
+  color: var(--text-muted);
   text-align: right;
 }
 
 .my-golfer-cut {
-  border-color: rgba(180,50,50,0.3);
+  border-color: rgba(180,50,50,0.2);
   opacity: 0.7;
 }
 
 .cut-badge {
   font-size: 0.68rem;
-  background: rgba(180,50,50,0.25);
-  color: #fca5a5;
+  background: rgba(180,50,50,0.1);
+  color: #b91c1c;
   border-radius: 4px;
   padding: 1px 5px;
   margin-left: 0.4rem;
@@ -760,8 +769,8 @@ body {
 }
 
 .stat-card {
-  background: var(--green-700);
-  border: 1px solid var(--green-600);
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
   border-radius: var(--radius-md);
   padding: 1rem;
   text-align: center;
@@ -771,12 +780,12 @@ body {
   font-family: var(--font-display);
   font-size: 1.6rem;
   font-weight: 700;
-  color: var(--gold-300);
+  color: var(--green-600);
 }
 
 .stat-label {
   font-size: 0.72rem;
-  color: var(--green-300);
+  color: var(--text-muted);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-top: 2px;
@@ -792,10 +801,10 @@ body {
 .admin-section h3 {
   font-family: var(--font-display);
   font-size: 1rem;
-  color: var(--gold-200);
+  color: var(--text-primary);
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--green-600);
+  border-bottom: 1px solid var(--cream-dark);
 }
 
 .admin-btn-group {
@@ -813,18 +822,18 @@ body {
 
 .users-table th {
   text-align: left;
-  color: var(--green-300);
+  color: var(--text-muted);
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 0.5rem;
-  border-bottom: 1px solid var(--green-600);
+  border-bottom: 1px solid var(--cream-dark);
 }
 
 .users-table td {
   padding: 0.5rem;
-  color: var(--off-white);
-  border-bottom: 1px solid var(--green-700);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--cream-dark);
 }
 
 .badge {
@@ -837,41 +846,42 @@ body {
 }
 
 .badge-gold {
-  background: rgba(200,146,42,0.2);
-  color: var(--gold-300);
+  background: rgba(200,146,42,0.15);
+  color: #7a5000;
   border: 1px solid rgba(200,146,42,0.4);
 }
 
 .badge-green {
-  background: rgba(74,150,90,0.2);
-  color: var(--green-100);
-  border: 1px solid rgba(74,150,90,0.3);
+  background: rgba(26,61,32,0.1);
+  color: var(--green-600);
+  border: 1px solid rgba(26,61,32,0.25);
 }
 
 .badge-red {
-  background: rgba(180,50,50,0.2);
-  color: #fca5a5;
-  border: 1px solid rgba(180,50,50,0.3);
+  background: rgba(180,50,50,0.08);
+  color: #b91c1c;
+  border: 1px solid rgba(180,50,50,0.25);
 }
 
 /* ── Locked banner ── */
 .locked-banner {
-  background: rgba(200,146,42,0.1);
-  border: 1px solid rgba(200,146,42,0.3);
+  background: rgba(200,146,42,0.08);
+  border: 1px solid rgba(200,146,42,0.35);
   border-radius: var(--radius-md);
   padding: 0.875rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
-  color: var(--gold-200);
+  color: #7a5000;
   font-size: 0.9rem;
 }
 
 /* ── Tournament banner ── */
 .tournament-banner {
-  background: linear-gradient(135deg, var(--green-700), var(--green-600));
-  border: 1px solid var(--green-500);
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  border-left: 4px solid var(--green-600);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin-bottom: 2rem;
@@ -880,18 +890,19 @@ body {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .banner-title {
   font-family: var(--font-display);
   font-size: 1.3rem;
-  color: var(--gold-300);
+  color: var(--text-primary);
   font-weight: 700;
 }
 
 .banner-sub {
   font-size: 0.82rem;
-  color: var(--green-200);
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -908,33 +919,33 @@ body {
 }
 
 .round-pill.complete {
-  background: rgba(74,150,90,0.25);
-  color: var(--green-100);
-  border: 1px solid rgba(74,150,90,0.4);
+  background: rgba(26,61,32,0.1);
+  color: var(--green-600);
+  border: 1px solid rgba(26,61,32,0.25);
 }
 
 .round-pill.current {
-  background: rgba(200,146,42,0.2);
-  color: var(--gold-200);
+  background: rgba(200,146,42,0.12);
+  color: #7a5000;
   border: 1px solid rgba(200,146,42,0.4);
 }
 
 .round-pill.upcoming {
-  background: var(--green-700);
-  color: var(--green-300);
-  border: 1px solid var(--green-600);
+  background: var(--cream);
+  color: var(--text-muted);
+  border: 1px solid var(--cream-dark);
 }
 
 /* ── Divider ── */
 .divider {
   border: none;
-  border-top: 1px solid var(--green-600);
+  border-top: 1px solid var(--cream-dark);
   margin: 1.5rem 0;
 }
 
 /* ── Misc ── */
-.text-gold   { color: var(--gold-300); }
-.text-muted  { color: var(--green-300); }
+.text-gold   { color: var(--gold-500); }
+.text-muted  { color: var(--text-muted); }
 .text-center { text-align: center; }
 
 .mt-1 { margin-top: 0.5rem; }
@@ -948,7 +959,7 @@ body {
 .empty-state {
   text-align: center;
   padding: 3rem;
-  color: var(--green-300);
+  color: var(--text-muted);
 }
 .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
-.empty-state h3 { color: var(--off-white); margin-bottom: 0.5rem; }
+.empty-state h3 { color: var(--text-primary); margin-bottom: 0.5rem; }

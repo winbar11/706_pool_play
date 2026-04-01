@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from database.db import get_conn
 from dependencies import get_admin_user
 from scoring.scoring import calc_round_points, calc_total_points, calc_team_points
+from scheduler.scheduler import refresh_scores
 import asyncio
 
 router = APIRouter()
@@ -28,7 +29,6 @@ def unlock_teams(authorization: str = Header(None)):
 @router.post("/refresh-scores")
 async def trigger_refresh(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    from scheduler import refresh_scores
     asyncio.create_task(refresh_scores())
     return {"message": "Score refresh triggered (running in background)"}
 

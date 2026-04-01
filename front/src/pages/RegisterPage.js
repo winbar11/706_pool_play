@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import logo from "../static/706_pool_logo.png";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -33,9 +34,7 @@ export default function RegisterPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <div className="flag">⛳</div>
-          <h1>Masters 706 Pool</h1>
-          <p>Masters 706 · 2026</p>
+          <img src={logo} alt="706 Masters Pool" height="150" style={{ objectFit: "contain" }} />
         </div>
 
         <h2>Create account</h2>

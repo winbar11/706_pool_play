@@ -1,5 +1,6 @@
 import { Outlet, NavLink, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import logo from "../static/706_pool_logo.png";
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -8,8 +9,7 @@ export default function Layout() {
     <div className="layout">
       <nav className="navbar">
         <Link to="/" className="navbar-brand">
-          <span className="brand-icon">⛳</span>
-          <span className="brand-text">Masters 706 Pool '26</span>
+          <img src={logo} alt="706 Masters Pool" height="46" style={{ objectFit: "contain" }} />
         </Link>
 
         <div className="navbar-nav">

@@ -58,7 +58,7 @@ export default function LeaderboardPage() {
         <div>
           <div className="banner-title">The Masters Tournament</div>
           <div className="banner-sub">
-            Masters 706 - Pool 2026
+            706 Masters- Pool 2026
             {isLocked && <span className="badge badge-gold" style={{ marginLeft: "0.75rem" }}>🔒 Teams Locked</span>}
           </div>
         </div>
