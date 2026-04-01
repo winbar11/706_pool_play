@@ -30,7 +30,11 @@ app = FastAPI(title="Masters Pool", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten to your frontend URL in production
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://706poolplay.com",  # replace with your actual Railway frontend URL
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
