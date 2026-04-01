@@ -11,12 +11,14 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # ESPN Masters tournament ID (yr. 2026) --> https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard
-# MASTERS_TOURNAMENT_ID = "401811941"
+# TOURNEY_ID = "401811941"
 
 # VALERO TEXAS OPEN TOURNAMENT
-MASTERS_TOURNAMENT_ID = "401811940"
+# TOURNEY_ID = "401811940"
+# Players Championship Test
+TOURNEY_ID = "401811937"
 
-LEADERBOARD_URL = f"https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event={MASTERS_TOURNAMENT_ID}"
+LEADERBOARD_URL = f"https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event={TOURNEY_ID}"
 SCORECARD_URL   = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scorecards/{athlete_id}?event={event_id}"
 
 async def fetch_leaderboard() -> Optional[dict]:
@@ -30,7 +32,7 @@ async def fetch_leaderboard() -> Optional[dict]:
         return None
 
 async def fetch_scorecard(athlete_id: str) -> Optional[dict]:
-    url = SCORECARD_URL.format(athlete_id=athlete_id, event_id=MASTERS_TOURNAMENT_ID)
+    url = SCORECARD_URL.format(athlete_id=athlete_id, event_id=TOURNEY_ID)
     try:
         async with httpx.AsyncClient(timeout=15) as client:
             r = await client.get(url)
