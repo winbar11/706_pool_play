@@ -157,7 +157,7 @@ export default function LeaderboardPage() {
       )}
 
       <p className="text-muted mt-2" style={{ fontSize: "0.78rem", textAlign: "center" }}>
-        Click any row to expand golfer breakdown · DK scoring: Eagle +8, Birdie +3, Par +0.5, Bogey −0.5
+        Click any row to expand golfer breakdown · Scoring: Eagle +8, Birdie +3, Par +0.5, Bogey −0.5
       </p>
     </div>
   );
