@@ -1,84 +1,154 @@
 """
-DraftKings Golf Scoring Engine
-Per-hole scoring + bonuses applied end-of-round.
+706 Masters Pool Scoring Engine
+================================
+Core: Sum of all 6 golfers' scores to par. LOWEST total wins.
+
+Bonuses (subtract from team total):
+  - Best round of day (unique across ALL golfers in tournament): -1 shot
+  - Solo leader after any round: -1 shot per round
+  - Tournament winner picked: -5 shots
+
+Penalties (add to team total):
+  - Missed cut / WD / DQ: actual 2-round score + 8 penalty shots
+  - Late WD (never played): +8 penalty
 """
 
-# Per-hole points
-HOLE_POINTS = {
-    "double_eagle": 20.0,
-    "eagle":        8.0,
-    "birdie":       3.0,
-    "par":          0.5,
-    "bogey":       -0.5,
-    "double_bogey":-1.0,
-    "worse":       -1.0,
-    "ace":         10.0,   # bonus on top of eagle/birdie scoring
-}
+MISSED_CUT_PENALTY = 8
 
-# Finishing position bonus
-FINISH_BONUS = {
-    1: 30, 2: 20, 3: 18, 4: 16, 5: 14, 6: 12, 7: 10,
-    8: 9, 9: 8, 10: 7,
-    **{p: 6 for p in range(11, 16)},
-    **{p: 5 for p in range(16, 21)},
-    **{p: 4 for p in range(21, 26)},
-    **{p: 3 for p in range(26, 31)},
-    **{p: 2 for p in range(31, 41)},
-    **{p: 1 for p in range(41, 51)},
-}
-
-STREAK_BONUS     = 3.0  # 3+ consecutive birdies or better (max 1/round)
-BOGEY_FREE_BONUS = 3.0  # no bogeys/worse in a round
-ALL4_UNDER70     = 5.0  # all 4 rounds under 70 strokes
-
-def calc_round_points(birdies, eagles, bogeys, doubles, worse, pars,
-                        ace, double_eagle, bogey_free, birdie_streak) -> float:
-    pts  = double_eagle * HOLE_POINTS["double_eagle"]
-    pts += eagles       * HOLE_POINTS["eagle"]
-    pts += birdies      * HOLE_POINTS["birdie"]
-    pts += pars         * HOLE_POINTS["par"]
-    pts += bogeys       * HOLE_POINTS["bogey"]
-    pts += doubles      * HOLE_POINTS["double_bogey"]
-    pts += worse        * HOLE_POINTS["worse"]
-    if ace:
-        pts += HOLE_POINTS["ace"]
-    if bogey_free:
-        pts += BOGEY_FREE_BONUS
-    if birdie_streak:
-        pts += STREAK_BONUS
-    return round(pts, 2)
-
-def calc_total_points(golfer: dict) -> float:
+def calc_golfer_score(golfer: dict) -> int:
     """
-    Re-compute all DK points from stored round stats.
-    Call after updating golfer hole data from ESPN.
+    Returns a golfer's contribution to their team's score.
+    - Active/finished: their actual total score to par
+    - Missed cut / WD: their 36-hole score + 8 penalty
+    - Never played: +8 flat
     """
-    total = 0.0
-    for r in range(1, 5):
-        total += calc_round_points(
-            golfer.get(f"r{r}_birdies", 0) or 0,
-            golfer.get(f"r{r}_eagles", 0) or 0,
-            golfer.get(f"r{r}_bogeys", 0) or 0,
-            golfer.get(f"r{r}_doubles", 0) or 0,
-            golfer.get(f"r{r}_worse", 0) or 0,
-            golfer.get(f"r{r}_pars", 0) or 0,
-            golfer.get(f"r{r}_ace", 0) or 0,
-            golfer.get(f"r{r}_double_eagle", 0) or 0,
-            golfer.get(f"r{r}_bogey_free", 0) or 0,
-            golfer.get(f"r{r}_birdie_streak", 0) or 0,
-        )
+    made_cut    = golfer.get("made_cut", 1)
+    total_score = golfer.get("total_score")
+    current_round = golfer.get("current_round", 0)
 
-    # All-4-rounds-under-70 bonus
-    scores = [golfer.get(f"round{r}_score") for r in range(1, 5)]
-    if all(s is not None and s < 70 for s in scores):
-        total += ALL4_UNDER70
+    # Never teed off
+    if current_round == 0 and total_score is None:
+        return MISSED_CUT_PENALTY
 
-    # Finish position bonus (added once at end of tournament)
-    pos = golfer.get("finish_position")
-    if pos and golfer.get("current_round", 0) == 4:
-        total += FINISH_BONUS.get(int(pos), 0)
+    # Missed cut or WD
+    if made_cut == 0:
+        base = total_score if total_score is not None else 0
+        return base + MISSED_CUT_PENALTY
 
-    return round(total, 2)
+    # Active or finished — use actual score to par
+    return total_score if total_score is not None else 0
 
-def calc_team_points(golfers: list[dict]) -> float:
-    return round(sum(g.get("dk_total_points", 0) or 0 for g in golfers), 2)
+
+def calc_team_raw_score(golfers: list) -> int:
+    """Sum of all 6 golfers' scores. Before bonuses."""
+    return sum(calc_golfer_score(g) for g in golfers)
+
+
+def calc_best_round_bonuses(all_teams: list) -> dict:
+    """
+    For each round (1-4), find the single lowest round score
+    across ALL golfers in the tournament. If that score is unique
+    (only one golfer shot it), every team that owns that golfer
+    gets -1 bonus for that round.
+
+    Returns: dict of {team_id: bonus_shots (negative number)}
+    """
+    bonuses = {team["id"]: 0 for team in all_teams}
+
+    for round_num in range(1, 5):
+        score_key = f"round{round_num}_score"
+
+        # Collect all round scores across all golfers across all teams
+        # Build a map: golfer_id -> round_score
+        golfer_scores = {}
+        for team in all_teams:
+            for g in team.get("golfers", []):
+                gid   = g["id"]
+                score = g.get(score_key)
+                if score is not None and gid not in golfer_scores:
+                    golfer_scores[gid] = score
+
+        if not golfer_scores:
+            continue
+
+        # Find the lowest score this round
+        best_score = min(golfer_scores.values())
+
+        # Find all golfers who shot that score
+        best_golfers = [gid for gid, s in golfer_scores.items() if s == best_score]
+
+        # Only award bonus if exactly ONE golfer shot the best round
+        if len(best_golfers) != 1:
+            continue
+
+        winning_golfer_id = best_golfers[0]
+
+        # Give -1 to every team that owns this golfer
+        for team in all_teams:
+            for g in team.get("golfers", []):
+                if g["id"] == winning_golfer_id:
+                    bonuses[team["id"]] -= 1
+                    break
+
+    return bonuses
+
+
+def calc_solo_leader_bonuses(all_teams: list) -> dict:
+    """
+    For each round (1-4), check if a golfer was the SOLE leader
+    after that round. If so, every team owning that golfer gets -1.
+
+    We track this via the solo_leader_rX fields on each golfer.
+    Returns: dict of {team_id: bonus_shots (negative number)}
+    """
+    bonuses = {team["id"]: 0 for team in all_teams}
+
+    for round_num in range(1, 5):
+        leader_key = f"solo_leader_r{round_num}"
+        for team in all_teams:
+            for g in team.get("golfers", []):
+                if g.get(leader_key) == 1:
+                    bonuses[team["id"]] -= 1
+
+    return bonuses
+
+
+def calc_winner_bonuses(all_teams: list) -> dict:
+    """
+    If a team's golfer won the tournament (finish_position=1,
+    current_round=4, made_cut=1), that team gets -5.
+    Returns: dict of {team_id: bonus_shots (negative number)}
+    """
+    bonuses = {team["id"]: 0 for team in all_teams}
+
+    for team in all_teams:
+        for g in team.get("golfers", []):
+            if (g.get("finish_position") == 1 and
+                    g.get("current_round", 0) == 4 and
+                    g.get("made_cut", 1) == 1):
+                bonuses[team["id"]] -= 5
+                break  # max one winner per team
+
+    return bonuses
+
+
+def calc_all_team_scores(all_teams: list) -> dict:
+    """
+    Master function. Returns final score for each team including
+    all bonuses.
+
+    Returns: dict of {team_id: {"raw": int, "bonus": int, "final": int}}
+    """
+    best_round  = calc_best_round_bonuses(all_teams)
+    solo_leader = calc_solo_leader_bonuses(all_teams)
+    winner      = calc_winner_bonuses(all_teams)
+
+    results = {}
+    for team in all_teams:
+        tid     = team["id"]
+        raw     = calc_team_raw_score(team.get("golfers", []))
+        bonus   = best_round.get(tid, 0) + solo_leader.get(tid, 0) + winner.get(tid, 0)
+        final   = raw + bonus
+        results[tid] = {"raw": raw, "bonus": bonus, "final": final}
+
+    return results

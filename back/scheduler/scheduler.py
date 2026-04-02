@@ -1,13 +1,13 @@
 import asyncio
 import logging
 from database.db import get_conn
-from clients.espn_client import fetch_leaderboard, parse_leaderboard, calc_hole_stats_from_rounds
-from scoring.scoring import calc_round_points, calc_total_points, calc_team_points
+from clients.espn_client import fetch_leaderboard, parse_leaderboard
+from scoring.scoring import calc_all_team_scores
 
 logger = logging.getLogger(__name__)
 
 async def refresh_scores():
-    logger.info("=== Starting end-of-round score refresh ===")
+    logger.info("=== Starting score refresh ===")
     try:
         lb_data = await fetch_leaderboard()
         if not lb_data:
@@ -16,49 +16,31 @@ async def refresh_scores():
 
         players = parse_leaderboard(lb_data)
         if not players:
-            logger.warning("No players parsed from leaderboard")
+            logger.warning("No players parsed")
             return
 
         logger.info(f"Processing {len(players)} players from ESPN")
-
-        # DEBUG — log first 5 players to see what ESPN is returning
-        logger.info("Sample players from ESPN:")
-        for p in players[:5]:
-            logger.info(
-                f"  {p['name']}: round={p['current_round']}, "
-                f"r1={p.get('round1_score')}, r2={p.get('round2_score')}, "
-                f"r3={p.get('round3_score')}, r4={p.get('round4_score')}, "
-                f"total={p.get('total_score')}, made_cut={p.get('made_cut')}"
-            )
-
         conn = get_conn()
-        cur = conn.cursor()
+        cur  = conn.cursor()
         matched = 0
 
+        # ── Step 1: Update each golfer's scores ──
         for player in players:
             espn_id = player["espn_id"]
             name    = player["name"]
 
             cur.execute("SELECT * FROM golfers WHERE espn_id LIKE %s", (f"{espn_id}%",))
             row = cur.fetchone()
-
             if not row:
                 cur.execute("SELECT * FROM golfers WHERE name LIKE %s", (f"%{name}%",))
                 row = cur.fetchone()
-
             if not row:
-                logger.debug(f"No DB match for: {name} (ESPN id: {espn_id})")
+                logger.debug(f"No DB match for: {name}")
                 continue
 
             matched += 1
             golfer        = dict(row)
             current_round = player.get("current_round", 0)
-
-            logger.info(
-                f"  Updating {name}: current_round={current_round}, "
-                f"r1={player.get('round1_score')}, r2={player.get('round2_score')}, "
-                f"r3={player.get('round3_score')}, r4={player.get('round4_score')}"
-            )
 
             updates = {
                 "current_round":   current_round,
@@ -72,43 +54,12 @@ async def refresh_scores():
                 if rs is not None:
                     updates[f"round{r}_score"] = rs
 
+            # Store simplified hole stats for display purposes
             round_scores = {
                 r: player.get(f"round{r}_score")
                 for r in range(1, current_round + 1)
                 if player.get(f"round{r}_score") is not None
             }
-            hole_stats = calc_hole_stats_from_rounds(round_scores)
-
-            for r, stats in hole_stats.items():
-                updates[f"r{r}_birdies"]       = stats["birdies"]
-                updates[f"r{r}_eagles"]        = stats["eagles"]
-                updates[f"r{r}_bogeys"]        = stats["bogeys"]
-                updates[f"r{r}_doubles"]       = stats["doubles"]
-                updates[f"r{r}_worse"]         = stats["worse"]
-                updates[f"r{r}_pars"]          = stats["pars"]
-                updates[f"r{r}_ace"]           = stats["ace"]
-                updates[f"r{r}_double_eagle"]  = stats["double_eagle"]
-                updates[f"r{r}_bogey_free"]    = stats["bogey_free"]
-                updates[f"r{r}_birdie_streak"] = stats["birdie_streak"]
-
-                round_pts = calc_round_points(
-                    stats["birdies"], stats["eagles"], stats["bogeys"],
-                    stats["doubles"], stats["worse"], stats["pars"],
-                    stats["ace"], stats["double_eagle"],
-                    stats["bogey_free"], stats["birdie_streak"]
-                )
-                updates[f"dk_r{r}_points"] = round_pts
-
-                logger.info(
-                    f"    Round {r}: score={stats.get('round_score')}, "
-                    f"birdies={stats['birdies']}, bogeys={stats['bogeys']}, "
-                    f"dk_pts={round_pts}"
-                )
-
-            merged = {**golfer, **updates}
-            updates["dk_total_points"] = calc_total_points(merged)
-
-            logger.info(f"    Total DK pts: {updates['dk_total_points']}")
 
             set_clause = ", ".join(f"{k}=%s" for k in updates)
             cur.execute(
@@ -118,18 +69,70 @@ async def refresh_scores():
 
         logger.info(f"Matched and updated {matched}/{len(players)} players")
 
-        cur.execute("SELECT * FROM teams")
-        teams = cur.fetchall()
-        for team in teams:
+        # ── Step 2: Determine solo leaders after each round ──
+        # Reset all solo leader flags first
+        cur.execute("""
+            UPDATE golfers SET
+                solo_leader_r1=0, solo_leader_r2=0,
+                solo_leader_r3=0, solo_leader_r4=0
+        """)
+
+        for round_num in range(1, 5):
+            score_key = f"round{round_num}_score"
+            # Get cumulative score through this round
+            # Sum of round scores up to round_num
+            round_cols = " + ".join(
+                f"COALESCE(round{r}_score, 0)" for r in range(1, round_num + 1)
+            )
+            cur.execute(f"""
+                SELECT id, ({round_cols}) as cumulative
+                FROM golfers
+                WHERE round{round_num}_score IS NOT NULL
+                ORDER BY cumulative ASC
+                LIMIT 2
+            """)
+            top = cur.fetchall()
+            if len(top) == 1 or (len(top) == 2 and top[0]["cumulative"] < top[1]["cumulative"]):
+                # Solo leader
+                leader_id = top[0]["id"]
+                cur.execute(
+                    f"UPDATE golfers SET solo_leader_r{round_num}=1 WHERE id=%s",
+                    (leader_id,)
+                )
+                logger.info(f"Round {round_num} solo leader: golfer id {leader_id} at {top[0]['cumulative']}")
+
+        # ── Step 3: Recalculate all team scores ──
+        cur.execute("""
+            SELECT t.*, u.username FROM teams t
+            JOIN users u ON u.id = t.user_id
+        """)
+        teams_raw = cur.fetchall()
+
+        all_teams = []
+        for team in teams_raw:
+            team_dict = dict(team)
             cur.execute("""
                 SELECT g.* FROM golfers g
                 JOIN team_golfers tg ON tg.golfer_id = g.id
                 WHERE tg.team_id = %s
-            """, (team["id"],))
-            golfer_rows = cur.fetchall()
-            total = calc_team_points([dict(g) for g in golfer_rows])
-            cur.execute("UPDATE teams SET dk_total_points=%s WHERE id=%s",
-                        (total, team["id"]))
+            """, (team_dict["id"],))
+            team_dict["golfers"] = [dict(g) for g in cur.fetchall()]
+            all_teams.append(team_dict)
+
+        scores = calc_all_team_scores(all_teams)
+
+        for team_id, result in scores.items():
+            cur.execute("""
+                UPDATE teams SET
+                    final_score=%s,
+                    bonus_shots=%s,
+                    dk_total_points=%s
+                WHERE id=%s
+            """, (result["final"], result["bonus"], result["final"], team_id))
+            logger.info(
+                f"Team {team_id}: raw={result['raw']}, "
+                f"bonus={result['bonus']}, final={result['final']}"
+            )
 
         conn.commit()
         cur.close()
