@@ -135,3 +135,30 @@ def clear_teams(authorization: str = Header(None)):
     conn.commit()
     conn.close()
     return {"message": "All teams cleared successfully"}
+
+
+@router.post("/clear-scores")
+def clear_scores(authorization: str = Header(None)):
+    get_admin_user(authorization=authorization)
+    conn = get_conn()
+    conn.execute("""
+        UPDATE golfers SET
+            current_round=0, total_score=NULL, made_cut=1, finish_position=NULL,
+            round1_score=NULL, round2_score=NULL, round3_score=NULL, round4_score=NULL,
+            dk_r1_points=0, dk_r2_points=0, dk_r3_points=0, dk_r4_points=0,
+            dk_total_points=0,
+            r1_birdies=0, r1_eagles=0, r1_bogeys=0, r1_doubles=0, r1_worse=0,
+            r1_pars=0, r1_ace=0, r1_double_eagle=0, r1_bogey_free=0, r1_birdie_streak=0,
+            r2_birdies=0, r2_eagles=0, r2_bogeys=0, r2_doubles=0, r2_worse=0,
+            r2_pars=0, r2_ace=0, r2_double_eagle=0, r2_bogey_free=0, r2_birdie_streak=0,
+            r3_birdies=0, r3_eagles=0, r3_bogeys=0, r3_doubles=0, r3_worse=0,
+            r3_pars=0, r3_ace=0, r3_double_eagle=0, r3_bogey_free=0, r3_birdie_streak=0,
+            r4_birdies=0, r4_eagles=0, r4_bogeys=0, r4_doubles=0, r4_worse=0,
+            r4_pars=0, r4_ace=0, r4_double_eagle=0, r4_bogey_free=0, r4_birdie_streak=0,
+            all4_under70=0
+        """)
+    # Reset all team points too
+    conn.execute("UPDATE teams SET dk_total_points=0")
+    conn.commit()
+    conn.close()
+    return {"message": "All scores cleared successfully"}

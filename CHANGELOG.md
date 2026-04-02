@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
+Added/Fixed
+[0.0.5] - 2026.04.02
+- added clear scores admin functionality
+
 Added
 [0.0.4] - 2026.04.01
 - added entire field for Valero Texas Open testing
