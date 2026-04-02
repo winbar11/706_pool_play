@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../utils/api.js";
-import { useAuth } from "../context/AuthContext.js";
 
 function fmtScore(s) {
   if (s === null || s === undefined) return "—";
@@ -10,8 +9,6 @@ function fmtScore(s) {
 }
 
 export default function MyTeamPage() {
-  const { user } = useAuth();
-
   const { data, isLoading } = useQuery({
     queryKey: ["my-team"],
     queryFn: api.teams.my,
@@ -65,8 +62,8 @@ export default function MyTeamPage() {
         <div className="stat-card">
           <div className="stat-value" style={{
             color: finalScore !== null && finalScore < 0 ? "var(--green-600)"
-                 : finalScore !== null && finalScore > 0 ? "#b91c1c"
-                 : "var(--text-primary)"
+                  : finalScore !== null && finalScore > 0 ? "#b91c1c"
+                  : "var(--text-primary)"
           }}>
             {fmtScore(finalScore)}
           </div>
@@ -79,7 +76,9 @@ export default function MyTeamPage() {
           </div>
         )}
         <div className="stat-card">
-          <div className="stat-value" style={{ color: bonusShots < 0 ? "var(--green-600)" : "var(--text-primary)" }}>
+          <div className="stat-value" style={{
+            color: bonusShots < 0 ? "var(--green-600)" : "var(--text-primary)"
+          }}>
             {bonusShots < 0 ? bonusShots : "—"}
           </div>
           <div className="stat-label">Bonus Shots</div>
@@ -89,7 +88,9 @@ export default function MyTeamPage() {
           <div className="stat-label">Raw Score</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{golfers.filter(g => g.made_cut !== 0).length}/6</div>
+          <div className="stat-value">
+            {golfers.filter(g => g.made_cut !== 0).length}/6
+          </div>
           <div className="stat-label">Made Cut</div>
         </div>
       </div>
@@ -102,7 +103,11 @@ export default function MyTeamPage() {
       )}
 
       <div className="card">
-        <h3 style={{ fontFamily: "var(--font-display)", color: "var(--text-primary)", marginBottom: "0" }}>
+        <h3 style={{
+          fontFamily: "var(--font-display)",
+          color: "var(--text-primary)",
+          marginBottom: "0"
+        }}>
           Golfer Breakdown
         </h3>
         <div className="my-team-golfers">
@@ -134,9 +139,9 @@ export default function MyTeamPage() {
                   </div>
                   <div className="my-golfer-meta">
                     #{g.world_rank} · ${g.salary.toLocaleString()}
-                    {g.finish_position > 0 && !missed
-                      ? ` · ${g.finish_position === 1 ? "Winner" : `T${g.finish_position}`}`
-                      : ""}
+                    {g.finish_position > 0 && !missed &&
+                      ` · ${g.finish_position === 1 ? "Winner" : `T${g.finish_position}`}`
+                    }
                   </div>
                   <div className="round-pts">
                     {[1, 2, 3, 4].map(r => {
@@ -150,8 +155,8 @@ export default function MyTeamPage() {
                 <div>
                   <div className="my-golfer-total" style={{
                     color: displayScore !== null && displayScore < 0 ? "var(--green-600)"
-                         : displayScore !== null && displayScore > 0 ? "#b91c1c"
-                         : "var(--text-primary)"
+                          : displayScore !== null && displayScore > 0 ? "#b91c1c"
+                          : "var(--text-primary)"
                   }}>
                     {fmtScore(displayScore)}
                   </div>
@@ -163,8 +168,11 @@ export default function MyTeamPage() {
         </div>
       </div>
 
-      <div className="card mt-2"
-        style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: "1.8" }}>
+      <div className="card mt-2" style={{
+        fontSize: "0.82rem",
+        color: "var(--text-muted)",
+        lineHeight: "1.8"
+      }}>
         <strong style={{ color: "var(--text-primary)" }}>Scoring rules</strong><br />
         Lowest cumulative score wins · Missed cut / WD = score + 8 penalty<br />
         Best unique round of day = −1 shot · Solo round leader = −1 shot · Pick the winner = −5 shots

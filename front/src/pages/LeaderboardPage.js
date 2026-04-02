@@ -104,9 +104,9 @@ export default function LeaderboardPage() {
             </thead>
             <tbody>
               {teams.map((team, idx) => {
-                const isOpen    = expanded === team.id;
-                const rankClass = idx === 0 ? "rank-1" : idx === 1 ? "rank-2" : idx === 2 ? "rank-3" : "rank-other";
-                const isMe      = team.username === user?.username;
+                const isOpen     = expanded === team.id;
+                const rankClass  = idx === 0 ? "rank-1" : idx === 1 ? "rank-2" : idx === 2 ? "rank-3" : "rank-other";
+                const isMe       = team.username === user?.username;
                 const finalScore = team.final_score ?? null;
                 const bonusShots = team.bonus_shots || 0;
 
@@ -174,9 +174,9 @@ export default function LeaderboardPage() {
                                       {displayScore !== null && displayScore !== undefined
                                         ? fmtScore(displayScore)
                                         : "—"}
-                                      {g.finish_position > 0 && !missed
-                                        ? ` · ${g.finish_position === 1 ? "🏆 Winner" : `T${g.finish_position}`}`
-                                        : ""}
+                                      {g.finish_position > 0 && !missed &&
+                                        ` · ${g.finish_position === 1 ? "🏆 Winner" : `T${g.finish_position}`}`
+                                      }
                                     </div>
                                     <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "2px" }}>
                                       {[1, 2, 3, 4]
@@ -201,7 +201,7 @@ export default function LeaderboardPage() {
                               ★ Bonus shots: {bonusShots}
                               {team.golfers.some(g =>
                                 g.finish_position === 1 && g.made_cut === 1 && g.current_round >= 4
-                              ) ? " (includes −5 winner bonus)" : ""}
+                              ) && " (includes −5 winner bonus)"}
                             </div>
                           )}
                         </td>
