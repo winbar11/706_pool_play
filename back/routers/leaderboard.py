@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from database.db import get_conn
 
+
 router = APIRouter()
 
 def fmt_score(score):
@@ -17,11 +18,11 @@ def leaderboard():
 
     cur.execute("""
         SELECT t.id, t.team_name, t.total_salary,
-               t.final_score, t.bonus_shots, t.dk_total_points,
-               t.is_locked, u.username
+                t.final_score, t.bonus_shots, t.dk_total_points,
+                t.is_locked, u.username
         FROM teams t
         JOIN users u ON u.id = t.user_id
-        ORDER BY t.final_score ASC
+        ORDER BY t.final_score ASC NULLS LAST
     """)
     teams = cur.fetchall()
 
@@ -29,20 +30,16 @@ def leaderboard():
     for i, team in enumerate(teams):
         cur.execute("""
             SELECT g.id, g.name, g.salary, g.world_rank,
-                   g.current_round, g.total_score, g.made_cut,
-                   g.finish_position,
-                   g.round1_score, g.round2_score,
-                   g.round3_score, g.round4_score,
-                   g.solo_leader_r1, g.solo_leader_r2,
-                   g.solo_leader_r3, g.solo_leader_r4,
-                   g.r1_birdies, g.r1_bogeys,
-                   g.r2_birdies, g.r2_bogeys,
-                   g.r3_birdies, g.r3_bogeys,
-                   g.r4_birdies, g.r4_bogeys
+                    g.current_round, g.total_score, g.made_cut,
+                    g.finish_position,
+                    g.round1_score, g.round2_score,
+                    g.round3_score, g.round4_score,
+                    g.solo_leader_r1, g.solo_leader_r2,
+                    g.solo_leader_r3, g.solo_leader_r4
             FROM golfers g
             JOIN team_golfers tg ON tg.golfer_id = g.id
             WHERE tg.team_id = %s
-            ORDER BY g.total_score ASC
+            ORDER BY g.total_score ASC NULLS LAST
         """, (team["id"],))
         golfers = cur.fetchall()
 
