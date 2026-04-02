@@ -113,8 +113,8 @@ export default function MyTeamPage() {
         <div className="my-team-golfers">
           {golfers.map(g => {
             const missed       = g.made_cut === 0;
-            const isLeader     = g.solo_leader_r1 || g.solo_leader_r2 ||
-                                  g.solo_leader_r3 || g.solo_leader_r4;
+            const isLeader     = !!(g.solo_leader_r1 || g.solo_leader_r2 ||
+                                  g.solo_leader_r3 || g.solo_leader_r4);
             const isWinner     = g.finish_position === 1 && !missed && g.current_round >= 4;
             const displayScore = missed && g.total_score !== null
               ? g.total_score + 8

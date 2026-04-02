@@ -7,8 +7,14 @@ from scoring.scoring import calc_all_team_scores
 
 logger = logging.getLogger(__name__)
 
+_CHAR_MAP = str.maketrans("øØðÐłŁ", "oOdDlL")
+
 def normalize_name(name: str) -> str:
-    """Strip accents/diacritics for fuzzy matching."""
+    """Strip accents/diacritics for fuzzy matching.
+    NFD decomposition handles å→a, é→e, etc.
+    The char map handles non-decomposing letters like ø, ð, ł.
+    """
+    name = name.translate(_CHAR_MAP)
     return ''.join(
         c for c in unicodedata.normalize('NFD', name)
         if unicodedata.category(c) != 'Mn'

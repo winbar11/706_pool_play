@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"\\\\`.*0\\\\`\\\\|\\\\${.*0}\" \"d:\\\\projs\\\\706_pool_play\\\\front\\\\src\" --include=\"*.js\")"
+    ]
+  }
+}
