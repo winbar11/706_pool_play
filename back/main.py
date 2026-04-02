@@ -33,7 +33,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://diligent-freedom-production-89cb.up.railway.app",  # replace with your actual Railway frontend URL
+        "https://706poolplay.up.railway.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
