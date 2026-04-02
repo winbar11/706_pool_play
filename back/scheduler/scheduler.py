@@ -20,6 +20,17 @@ async def refresh_scores():
             return
 
         logger.info(f"Processing {len(players)} players from ESPN")
+
+        # DEBUG — log first 5 players to see what ESPN is returning
+        logger.info("Sample players from ESPN:")
+        for p in players[:5]:
+            logger.info(
+                f"  {p['name']}: round={p['current_round']}, "
+                f"r1={p.get('round1_score')}, r2={p.get('round2_score')}, "
+                f"r3={p.get('round3_score')}, r4={p.get('round4_score')}, "
+                f"total={p.get('total_score')}, made_cut={p.get('made_cut')}"
+            )
+
         conn = get_conn()
         cur = conn.cursor()
         matched = 0
@@ -42,6 +53,12 @@ async def refresh_scores():
             matched += 1
             golfer        = dict(row)
             current_round = player.get("current_round", 0)
+
+            logger.info(
+                f"  Updating {name}: current_round={current_round}, "
+                f"r1={player.get('round1_score')}, r2={player.get('round2_score')}, "
+                f"r3={player.get('round3_score')}, r4={player.get('round4_score')}"
+            )
 
             updates = {
                 "current_round":   current_round,
@@ -82,8 +99,16 @@ async def refresh_scores():
                 )
                 updates[f"dk_r{r}_points"] = round_pts
 
+                logger.info(
+                    f"    Round {r}: score={stats.get('round_score')}, "
+                    f"birdies={stats['birdies']}, bogeys={stats['bogeys']}, "
+                    f"dk_pts={round_pts}"
+                )
+
             merged = {**golfer, **updates}
             updates["dk_total_points"] = calc_total_points(merged)
+
+            logger.info(f"    Total DK pts: {updates['dk_total_points']}")
 
             set_clause = ", ".join(f"{k}=%s" for k in updates)
             cur.execute(
