@@ -40,10 +40,6 @@ export default function RegisterPage() {
         <h2>Create account</h2>
         {error && <div className="alert alert-error">{error}</div>}
 
-        <div className="alert alert-info" style={{ marginBottom: "1rem" }}>
-          First person to register becomes the admin.
-        </div>
-
         <form onSubmit={submit}>
           <div className="form-group">
             <label>Username</label>
