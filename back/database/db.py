@@ -5,7 +5,8 @@ from psycopg.rows import dict_row
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 def get_conn():
-    conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
+    url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    conn = psycopg.connect(url, row_factory=dict_row, sslmode="require")
     return conn
 
 def init_db():
