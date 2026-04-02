@@ -1,8 +1,13 @@
 # 706 Masters Pool
 
-**The Official 706 Masters Pool**
+**The Official 706 Pool Play App**
 
-## Scoring
+Only if you feel entitled, this service is not free.
+Please feel free to donate to my Venmo to help support the app.
+[Venmo](https://venmo.com/u/windell_11)
+[PayPal](https://www.paypal.me/JamesWindell)
+
+## Scoring (DFS)
 
 | Scoring event | Points |
 |---------------|--------|
@@ -19,4 +24,3 @@
 | Finish 1st    | +30    |
 | Finish 2nd    | +20    |
 | Finish 3rd–50th | +18 down to +1 |
-
