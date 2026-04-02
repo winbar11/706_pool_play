@@ -2,7 +2,7 @@ from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from database.db import get_conn
 from dependencies import get_admin_user
-from scoring.scoring import calc_round_points, calc_total_points, calc_team_points
+from scoring.scoring import calc_golfer_score, calc_all_team_scores
 from scheduler.scheduler import refresh_scores
 import asyncio
 
@@ -37,26 +37,22 @@ async def trigger_refresh(authorization: str = Header(None)):
     return {"message": "Score refresh triggered (running in background)"}
 
 class ManualGolferUpdate(BaseModel):
-    golfer_id: int
-    round_num: int
-    birdies: int = 0
-    eagles: int = 0
-    bogeys: int = 0
-    doubles: int = 0
-    worse: int = 0
-    pars: int = 0
-    ace: int = 0
-    double_eagle: int = 0
-    bogey_free: int = 0
-    birdie_streak: int = 0
-    round_score: int = None
+    golfer_id:    int
+    round_num:    int
+    round_score:  int = None
+    total_score:  int = None
+    made_cut:     int = 1
+    finish_position: int = None
 
 @router.post("/update-golfer")
 def manual_update_golfer(req: ManualGolferUpdate, authorization: str = Header(None)):
+    """
+    Manual score entry. Updates round score and total score,
+    then recalculates all team final scores.
+    """
     get_admin_user(authorization=authorization)
     conn = get_conn()
     cur = conn.cursor()
-    r = req.round_num
 
     cur.execute("SELECT * FROM golfers WHERE id=%s", (req.golfer_id,))
     golfer = cur.fetchone()
@@ -65,52 +61,54 @@ def manual_update_golfer(req: ManualGolferUpdate, authorization: str = Header(No
         conn.close()
         raise HTTPException(404, "Golfer not found")
 
-    round_pts = calc_round_points(
-        req.birdies, req.eagles, req.bogeys, req.doubles,
-        req.worse, req.pars, req.ace, req.double_eagle,
-        req.bogey_free, req.birdie_streak
-    )
+    r = req.round_num
 
-    cur.execute(f"""
-        UPDATE golfers SET
-            r{r}_birdies=%s, r{r}_eagles=%s, r{r}_bogeys=%s, r{r}_doubles=%s,
-            r{r}_worse=%s, r{r}_pars=%s, r{r}_ace=%s, r{r}_double_eagle=%s,
-            r{r}_bogey_free=%s, r{r}_birdie_streak=%s,
-            round{r}_score=%s, dk_r{r}_points=%s
-        WHERE id=%s
-    """, (req.birdies, req.eagles, req.bogeys, req.doubles,
-            req.worse, req.pars, req.ace, req.double_eagle,
-            req.bogey_free, req.birdie_streak,
-            req.round_score, round_pts, req.golfer_id))
+    # Build update fields
+    updates = {}
+    if req.round_score is not None:
+        updates[f"round{r}_score"] = req.round_score
+    if req.total_score is not None:
+        updates["total_score"]     = req.total_score
+        updates["current_round"]   = r
+    if req.finish_position is not None:
+        updates["finish_position"] = req.finish_position
+    updates["made_cut"] = req.made_cut
 
-    cur.execute("SELECT * FROM golfers WHERE id=%s", (req.golfer_id,))
-    updated = dict(cur.fetchone())
-    total = calc_total_points(updated)
-    cur.execute("UPDATE golfers SET dk_total_points=%s WHERE id=%s",
-                (total, req.golfer_id))
+    if updates:
+        set_clause = ", ".join(f"{k}=%s" for k in updates)
+        cur.execute(
+            f"UPDATE golfers SET {set_clause} WHERE id=%s",
+            (*updates.values(), req.golfer_id)
+        )
 
+    # Recalculate all team scores
     cur.execute("""
-        SELECT t.* FROM teams t
-        JOIN team_golfers tg ON tg.team_id = t.id
-        WHERE tg.golfer_id = %s
-    """, (req.golfer_id,))
-    teams = cur.fetchall()
-
-    for team in teams:
+        SELECT t.*, u.username FROM teams t
+        JOIN users u ON u.id = t.user_id
+    """)
+    teams_raw = cur.fetchall()
+    all_teams = []
+    for team in teams_raw:
+        team_dict = dict(team)
         cur.execute("""
             SELECT g.* FROM golfers g
             JOIN team_golfers tg ON tg.golfer_id = g.id
             WHERE tg.team_id = %s
-        """, (team["id"],))
-        golfers = cur.fetchall()
-        total_pts = calc_team_points([dict(g) for g in golfers])
-        cur.execute("UPDATE teams SET dk_total_points=%s WHERE id=%s",
-                    (total_pts, team["id"]))
+        """, (team_dict["id"],))
+        team_dict["golfers"] = [dict(g) for g in cur.fetchall()]
+        all_teams.append(team_dict)
+
+    scores = calc_all_team_scores(all_teams)
+    for team_id, result in scores.items():
+        cur.execute("""
+            UPDATE teams SET final_score=%s, bonus_shots=%s, dk_total_points=%s
+            WHERE id=%s
+        """, (result["final"], result["bonus"], result["final"], team_id))
 
     conn.commit()
     cur.close()
     conn.close()
-    return {"message": f"Golfer updated. Round {r} DK pts: {round_pts}"}
+    return {"message": f"Golfer updated and team scores recalculated"}
 
 @router.get("/users")
 def list_users(authorization: str = Header(None)):
@@ -154,21 +152,20 @@ def clear_scores(authorization: str = Header(None)):
     cur = conn.cursor()
     cur.execute("""
         UPDATE golfers SET
-            current_round=0, total_score=NULL, made_cut=1, finish_position=NULL,
-            round1_score=NULL, round2_score=NULL, round3_score=NULL, round4_score=NULL,
-            dk_r1_points=0, dk_r2_points=0, dk_r3_points=0, dk_r4_points=0,
-            dk_total_points=0,
-            r1_birdies=0, r1_eagles=0, r1_bogeys=0, r1_doubles=0, r1_worse=0,
-            r1_pars=0, r1_ace=0, r1_double_eagle=0, r1_bogey_free=0, r1_birdie_streak=0,
-            r2_birdies=0, r2_eagles=0, r2_bogeys=0, r2_doubles=0, r2_worse=0,
-            r2_pars=0, r2_ace=0, r2_double_eagle=0, r2_bogey_free=0, r2_birdie_streak=0,
-            r3_birdies=0, r3_eagles=0, r3_bogeys=0, r3_doubles=0, r3_worse=0,
-            r3_pars=0, r3_ace=0, r3_double_eagle=0, r3_bogey_free=0, r3_birdie_streak=0,
-            r4_birdies=0, r4_eagles=0, r4_bogeys=0, r4_doubles=0, r4_worse=0,
-            r4_pars=0, r4_ace=0, r4_double_eagle=0, r4_bogey_free=0, r4_birdie_streak=0,
-            all4_under70=0
+            current_round=0,
+            total_score=NULL,
+            made_cut=1,
+            finish_position=NULL,
+            round1_score=NULL,
+            round2_score=NULL,
+            round3_score=NULL,
+            round4_score=NULL,
+            solo_leader_r1=0,
+            solo_leader_r2=0,
+            solo_leader_r3=0,
+            solo_leader_r4=0
     """)
-    cur.execute("UPDATE teams SET dk_total_points=0")
+    cur.execute("UPDATE teams SET final_score=0, bonus_shots=0, dk_total_points=0")
     conn.commit()
     cur.close()
     conn.close()

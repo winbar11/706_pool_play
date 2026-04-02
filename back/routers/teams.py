@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from database.db import get_conn
 from dependencies import get_current_user
-from scoring.scoring import calc_team_points
 
 router = APIRouter()
 
@@ -61,11 +60,11 @@ def submit_team(req: TeamSubmit, authorization: str = Header(None)):
         cur.execute("DELETE FROM team_golfers WHERE team_id=%s", (existing["id"],))
         cur.execute("DELETE FROM teams WHERE id=%s", (existing["id"],))
 
-    # Insert new team
-    dk_pts = calc_team_points(golfers)
+    # Insert new team — score starts at 0, updated by scheduler
     cur.execute(
-        "INSERT INTO teams (user_id, team_name, total_salary, dk_total_points) VALUES (%s,%s,%s,%s) RETURNING id",
-        (user["id"], req.team_name, total_salary, dk_pts)
+        """INSERT INTO teams (user_id, team_name, total_salary, final_score, bonus_shots, dk_total_points)
+            VALUES (%s, %s, %s, 0, 0, 0) RETURNING id""",
+        (user["id"], req.team_name, total_salary)
     )
     team_id = cur.fetchone()["id"]
 
@@ -77,7 +76,7 @@ def submit_team(req: TeamSubmit, authorization: str = Header(None)):
     cur.close()
     conn.close()
     return {"message": "Team submitted successfully", "team_id": team_id,
-            "total_salary": total_salary, "dk_total_points": dk_pts}
+            "total_salary": total_salary}
 
 @router.get("/my")
 def my_team(authorization: str = Header(None)):
@@ -96,7 +95,7 @@ def my_team(authorization: str = Header(None)):
         SELECT g.* FROM golfers g
         JOIN team_golfers tg ON tg.golfer_id = g.id
         WHERE tg.team_id = %s
-        ORDER BY g.dk_total_points DESC
+        ORDER BY g.total_score ASC NULLS LAST
     """, (team["id"],))
     golfers = cur.fetchall()
     cur.close()
@@ -121,7 +120,7 @@ def get_team(team_id: int):
         SELECT g.* FROM golfers g
         JOIN team_golfers tg ON tg.golfer_id = g.id
         WHERE tg.team_id = %s
-        ORDER BY g.dk_total_points DESC
+        ORDER BY g.total_score ASC NULLS LAST
     """, (team_id,))
     golfers = cur.fetchall()
     cur.close()
