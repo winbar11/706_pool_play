@@ -211,3 +211,4 @@ __marimo__/
 
 # Node Modules
 front/node_modules/
+front/package-lock.json
