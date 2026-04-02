@@ -9,11 +9,13 @@ function fmtScore(score) {
   return score > 0 ? `+${score}` : `${score}`;
 }
 
-function fmtRound(golfers, roundKey, par = 72) {
-  const scores = golfers.map(g => g[roundKey]).filter(s => s !== null && s !== undefined);
+function fmtRound(golfers, roundKey) {
+  const scores = golfers
+    .map(g => g[roundKey])
+    .filter(s => s !== null && s !== undefined && s >= 60);
   if (scores.length === 0) return "—";
   const total = scores.reduce((s, v) => s + v, 0);
-  const toPar = total - (par * scores.length);
+  const toPar = total - (72 * scores.length);
   return fmtScore(toPar);
 }
 
@@ -62,7 +64,11 @@ export default function LeaderboardPage() {
           <div className="banner-title">706 Masters Pool</div>
           <div className="banner-sub">
             Valero Texas Open · TPC San Antonio · Apr 3–6, 2026
-            {isLocked && <span className="badge badge-gold" style={{ marginLeft: "0.75rem" }}>🔒 Teams Locked</span>}
+            {isLocked && (
+              <span className="badge badge-gold" style={{ marginLeft: "0.75rem" }}>
+                🔒 Teams Locked
+              </span>
+            )}
           </div>
         </div>
         <RoundPills current={currentRound} />
@@ -98,10 +104,10 @@ export default function LeaderboardPage() {
             </thead>
             <tbody>
               {teams.map((team, idx) => {
-                const isOpen = expanded === team.id;
+                const isOpen    = expanded === team.id;
                 const rankClass = idx === 0 ? "rank-1" : idx === 1 ? "rank-2" : idx === 2 ? "rank-3" : "rank-other";
-                const isMe = team.username === user?.username;
-                const finalScore = team.final_score ?? team.dk_total_points ?? null;
+                const isMe      = team.username === user?.username;
+                const finalScore = team.final_score ?? null;
                 const bonusShots = team.bonus_shots || 0;
 
                 return (
@@ -113,7 +119,9 @@ export default function LeaderboardPage() {
                       <td className="team-name-cell">
                         <div className="team-name">
                           {team.team_name}
-                          {isMe && <span className="badge badge-gold" style={{ marginLeft: "0.5rem" }}>You</span>}
+                          {isMe && (
+                            <span className="badge badge-gold" style={{ marginLeft: "0.5rem" }}>You</span>
+                          )}
                         </div>
                         <div className="owner">@{team.username}</div>
                       </td>
@@ -128,7 +136,7 @@ export default function LeaderboardPage() {
                         {bonusShots < 0 ? bonusShots : "—"}
                       </td>
                       <td className="dk-points" style={{
-                        color: finalScore !== null && finalScore <= 0
+                        color: finalScore !== null && finalScore < 0
                           ? "var(--green-600)"
                           : finalScore !== null && finalScore > 0
                           ? "#b91c1c"
@@ -143,9 +151,13 @@ export default function LeaderboardPage() {
                         <td colSpan={8}>
                           <div className="golfer-chips">
                             {team.golfers.map(g => {
-                              const missed = g.made_cut === 0;
+                              const missed   = g.made_cut === 0;
                               const isLeader = g.solo_leader_r1 || g.solo_leader_r2 ||
                                                g.solo_leader_r3 || g.solo_leader_r4;
+                              const displayScore = missed && g.total_score !== null
+                                ? g.total_score + 8
+                                : g.total_score;
+
                               return (
                                 <div key={g.id} className={`golfer-chip ${missed ? "chip-cut" : ""}`}>
                                   <div>
@@ -159,16 +171,18 @@ export default function LeaderboardPage() {
                                       )}
                                     </div>
                                     <div className="chip-score">
-                                      {g.total_score !== null && g.total_score !== undefined
-                                        ? fmtScore(missed ? g.total_score + 8 : g.total_score)
+                                      {displayScore !== null && displayScore !== undefined
+                                        ? fmtScore(displayScore)
                                         : "—"}
-                                      {g.finish_position && g.finish_position > 0 && !missed
+                                      {g.finish_position > 0 && !missed
                                         ? ` · ${g.finish_position === 1 ? "🏆 Winner" : `T${g.finish_position}`}`
                                         : ""}
                                     </div>
                                     <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "2px" }}>
-                                      {[g.round1_score, g.round2_score, g.round3_score, g.round4_score]
-                                        .map((s, i) => s !== null && s !== undefined ? `R${i+1}: ${s}` : null)
+                                      {[1, 2, 3, 4]
+                                        .map(r => g[`round${r}_score`] !== null && g[`round${r}_score`] !== undefined
+                                          ? `R${r}: ${g[`round${r}_score`]}`
+                                          : null)
                                         .filter(Boolean)
                                         .join(" · ")}
                                     </div>
@@ -177,7 +191,6 @@ export default function LeaderboardPage() {
                               );
                             })}
                           </div>
-
                           {bonusShots < 0 && (
                             <div style={{
                               marginTop: "0.5rem",
@@ -186,8 +199,9 @@ export default function LeaderboardPage() {
                               paddingLeft: "0.25rem"
                             }}>
                               ★ Bonus shots: {bonusShots}
-                              {team.golfers.some(g => g.finish_position === 1 && g.made_cut === 1 && g.current_round >= 4)
-                                ? " (includes −5 winner bonus)" : ""}
+                              {team.golfers.some(g =>
+                                g.finish_position === 1 && g.made_cut === 1 && g.current_round >= 4
+                              ) ? " (includes −5 winner bonus)" : ""}
                             </div>
                           )}
                         </td>

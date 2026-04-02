@@ -39,7 +39,6 @@ async def refresh_scores():
                 continue
 
             matched += 1
-            golfer        = dict(row)
             current_round = player.get("current_round", 0)
 
             updates = {
@@ -54,23 +53,15 @@ async def refresh_scores():
                 if rs is not None:
                     updates[f"round{r}_score"] = rs
 
-            # Store simplified hole stats for display purposes
-            round_scores = {
-                r: player.get(f"round{r}_score")
-                for r in range(1, current_round + 1)
-                if player.get(f"round{r}_score") is not None
-            }
-
             set_clause = ", ".join(f"{k}=%s" for k in updates)
             cur.execute(
                 f"UPDATE golfers SET {set_clause} WHERE id=%s",
-                (*updates.values(), golfer["id"])
+                (*updates.values(), dict(row)["id"])
             )
 
         logger.info(f"Matched and updated {matched}/{len(players)} players")
 
         # ── Step 2: Determine solo leaders after each round ──
-        # Reset all solo leader flags first
         cur.execute("""
             UPDATE golfers SET
                 solo_leader_r1=0, solo_leader_r2=0,
@@ -78,28 +69,28 @@ async def refresh_scores():
         """)
 
         for round_num in range(1, 5):
-            score_key = f"round{round_num}_score"
-            # Get cumulative score through this round
-            # Sum of round scores up to round_num
-            round_cols = " + ".join(
-                f"COALESCE(round{r}_score, 0)" for r in range(1, round_num + 1)
-            )
             cur.execute(f"""
-                SELECT id, ({round_cols}) as cumulative
+                SELECT id, total_score
                 FROM golfers
                 WHERE round{round_num}_score IS NOT NULL
-                ORDER BY cumulative ASC
+                AND current_round >= %s
+                ORDER BY total_score ASC
                 LIMIT 2
-            """)
+            """, (round_num,))
             top = cur.fetchall()
-            if len(top) == 1 or (len(top) == 2 and top[0]["cumulative"] < top[1]["cumulative"]):
-                # Solo leader
+
+            if not top:
+                continue
+
+            if len(top) == 1 or top[0]["total_score"] < top[1]["total_score"]:
                 leader_id = top[0]["id"]
                 cur.execute(
                     f"UPDATE golfers SET solo_leader_r{round_num}=1 WHERE id=%s",
                     (leader_id,)
                 )
-                logger.info(f"Round {round_num} solo leader: golfer id {leader_id} at {top[0]['cumulative']}")
+                logger.info(f"Round {round_num} solo leader: id={leader_id} at {top[0]['total_score']}")
+            else:
+                logger.info(f"Round {round_num}: tie at {top[0]['total_score']} — no solo leader bonus")
 
         # ── Step 3: Recalculate all team scores ──
         cur.execute("""
@@ -122,17 +113,11 @@ async def refresh_scores():
         scores = calc_all_team_scores(all_teams)
 
         for team_id, result in scores.items():
+            logger.info(f"Team {team_id}: raw={result['raw']} bonus={result['bonus']} final={result['final']}")
             cur.execute("""
-                UPDATE teams SET
-                    final_score=%s,
-                    bonus_shots=%s,
-                    dk_total_points=%s
+                UPDATE teams SET final_score=%s, bonus_shots=%s, dk_total_points=%s
                 WHERE id=%s
             """, (result["final"], result["bonus"], result["final"], team_id))
-            logger.info(
-                f"Team {team_id}: raw={result['raw']}, "
-                f"bonus={result['bonus']}, final={result['final']}"
-            )
 
         conn.commit()
         cur.close()

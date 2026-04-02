@@ -20,11 +20,9 @@ def calc_golfer_score(golfer: dict) -> int:
     total_score   = golfer.get("total_score")
     current_round = golfer.get("current_round", 0)
 
-    # Never teed off
     if current_round == 0 or total_score is None:
-        return 0  # no penalty until they actually play
+        return 0
 
-    # Missed cut or WD
     if made_cut == 0:
         return int(total_score) + MISSED_CUT_PENALTY
 
@@ -46,7 +44,6 @@ def calc_best_round_bonuses(all_teams: list) -> dict:
             for g in team.get("golfers", []):
                 gid   = g["id"]
                 score = g.get(score_key)
-                # Only count realistic completed round scores
                 if score is not None and score >= 60 and gid not in golfer_scores:
                     golfer_scores[gid] = score
 

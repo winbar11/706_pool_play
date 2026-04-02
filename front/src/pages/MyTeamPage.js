@@ -9,11 +9,6 @@ function fmtScore(s) {
   return s > 0 ? `+${s}` : `${s}`;
 }
 
-function fmtRoundScore(s) {
-  if (s === null || s === undefined) return "—";
-  return s;
-}
-
 export default function MyTeamPage() {
   const { user } = useAuth();
 
@@ -29,11 +24,10 @@ export default function MyTeamPage() {
 
   if (isLoading) return <div className="loading-screen"><span className="loader" /></div>;
 
-  const team = data?.team;
+  const team     = data?.team;
   const isLocked = lbData?.settings?.teams_locked === "1";
-
-  const teams = lbData?.teams || [];
-  const myRank = teams.findIndex(t => t.id === team?.id) + 1;
+  const teams    = lbData?.teams || [];
+  const myRank   = teams.findIndex(t => t.id === team?.id) + 1;
 
   if (!team) {
     return (
@@ -49,11 +43,11 @@ export default function MyTeamPage() {
     );
   }
 
-  const golfers  = team.golfers || [];
-  const myTeamLb = teams.find(t => t.id === team.id);
-  const finalScore  = myTeamLb?.final_score ?? 0;
-  const bonusShots  = myTeamLb?.bonus_shots ?? 0;
-  const rawScore    = finalScore - bonusShots;
+  const golfers    = team.golfers || [];
+  const myTeamLb   = teams.find(t => t.id === team.id);
+  const finalScore = myTeamLb?.final_score ?? null;
+  const bonusShots = myTeamLb?.bonus_shots ?? 0;
+  const rawScore   = finalScore !== null ? finalScore - bonusShots : null;
 
   return (
     <div>
@@ -61,14 +55,19 @@ export default function MyTeamPage() {
         <h1>{team.team_name}</h1>
         <p>
           ${team.total_salary.toLocaleString()} / $50,000 salary cap
-          {isLocked && <span className="badge badge-gold" style={{ marginLeft: "0.5rem" }}>🔒 Locked</span>}
+          {isLocked && (
+            <span className="badge badge-gold" style={{ marginLeft: "0.5rem" }}>🔒 Locked</span>
+          )}
         </p>
       </div>
 
-      {/* Stats row */}
       <div className="stats-row">
         <div className="stat-card">
-          <div className="stat-value" style={{ color: finalScore <= 0 ? "var(--green-600)" : "#b91c1c" }}>
+          <div className="stat-value" style={{
+            color: finalScore !== null && finalScore < 0 ? "var(--green-600)"
+                 : finalScore !== null && finalScore > 0 ? "#b91c1c"
+                 : "var(--text-primary)"
+          }}>
             {fmtScore(finalScore)}
           </div>
           <div className="stat-label">Final Score</div>
@@ -80,7 +79,7 @@ export default function MyTeamPage() {
           </div>
         )}
         <div className="stat-card">
-          <div className="stat-value" style={{ color: "var(--green-600)" }}>
+          <div className="stat-value" style={{ color: bonusShots < 0 ? "var(--green-600)" : "var(--text-primary)" }}>
             {bonusShots < 0 ? bonusShots : "—"}
           </div>
           <div className="stat-label">Bonus Shots</div>
@@ -106,14 +105,14 @@ export default function MyTeamPage() {
         <h3 style={{ fontFamily: "var(--font-display)", color: "var(--text-primary)", marginBottom: "0" }}>
           Golfer Breakdown
         </h3>
-
         <div className="my-team-golfers">
           {golfers.map(g => {
-            const missed    = g.made_cut === 0;
-            const isLeader  = g.solo_leader_r1 || g.solo_leader_r2 ||
-                              g.solo_leader_r3 || g.solo_leader_r4;
-            const displayed = missed
-              ? (g.total_score !== null ? g.total_score + 8 : "CUT")
+            const missed       = g.made_cut === 0;
+            const isLeader     = g.solo_leader_r1 || g.solo_leader_r2 ||
+                                  g.solo_leader_r3 || g.solo_leader_r4;
+            const isWinner     = g.finish_position === 1 && !missed && g.current_round >= 4;
+            const displayScore = missed && g.total_score !== null
+              ? g.total_score + 8
               : g.total_score;
 
             return (
@@ -127,7 +126,7 @@ export default function MyTeamPage() {
                         ★ Round Leader
                       </span>
                     )}
-                    {g.finish_position === 1 && !missed && g.current_round >= 4 && (
+                    {isWinner && (
                       <span className="badge badge-green" style={{ marginLeft: "0.4rem" }}>
                         🏆 Winner −5
                       </span>
@@ -135,12 +134,12 @@ export default function MyTeamPage() {
                   </div>
                   <div className="my-golfer-meta">
                     #{g.world_rank} · ${g.salary.toLocaleString()}
-                    {g.finish_position && g.finish_position > 0 && !missed
+                    {g.finish_position > 0 && !missed
                       ? ` · ${g.finish_position === 1 ? "Winner" : `T${g.finish_position}`}`
                       : ""}
                   </div>
                   <div className="round-pts">
-                    {[1,2,3,4].map(r => {
+                    {[1, 2, 3, 4].map(r => {
                       const s = g[`round${r}_score`];
                       return s !== null && s !== undefined
                         ? <span key={r} className="rpt">R{r}: {s}</span>
@@ -149,9 +148,12 @@ export default function MyTeamPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="my-golfer-total"
-                    style={{ color: displayed !== null && displayed <= 0 ? "var(--green-600)" : "#b91c1c" }}>
-                    {fmtScore(displayed)}
+                  <div className="my-golfer-total" style={{
+                    color: displayScore !== null && displayScore < 0 ? "var(--green-600)"
+                          : displayScore !== null && displayScore > 0 ? "#b91c1c"
+                          : "var(--text-primary)"
+                  }}>
+                    {fmtScore(displayScore)}
                   </div>
                   <div className="my-golfer-salary">score</div>
                 </div>
@@ -159,14 +161,3 @@ export default function MyTeamPage() {
             );
           })}
         </div>
-      </div>
-
-      <div className="card mt-2"
-        style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: "1.8" }}>
-        <strong style={{ color: "var(--text-primary)" }}>Scoring rules</strong><br />
-        Lowest cumulative score wins · Missed cut / WD = score + 8 penalty<br />
-        Best unique round of day = −1 shot · Solo round leader = −1 shot · Pick the winner = −5 shots
-      </div>
-    </div>
-  );
-}
