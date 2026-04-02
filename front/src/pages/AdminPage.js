@@ -47,6 +47,15 @@ export default function AdminPage() {
     onSuccess: () => { qc.invalidateQueries(["leaderboard"]); notify("All teams cleared."); },
     onError: (e) => fail(e.message),
   });
+  const clearScoresMut = useMutation({
+    mutationFn: api.admin.clearScores,
+    onSuccess: () => {
+      qc.invalidateQueries(["leaderboard"]);
+      qc.invalidateQueries(["golfers"]);
+      notify("All scores cleared.");
+    },
+    onError: (e) => fail(e.message),
+  });
   const manualMut = useMutation({
     mutationFn: () => api.admin.updateGolfer({
       ...Object.fromEntries(
@@ -89,12 +98,12 @@ export default function AdminPage() {
             {isLocked ? (
               <button className="btn btn-secondary" onClick={() => unlockMut.mutate()}
                 disabled={unlockMut.isPending}>
-                Unlock Teams
+                🔓 Unlock Teams
               </button>
             ) : (
               <button className="btn btn-primary" onClick={() => lockMut.mutate()}
                 disabled={lockMut.isPending}>
-                Lock Teams (start tournament)
+                🔒 Lock Teams (start tournament)
               </button>
             )}
 
@@ -106,7 +115,19 @@ export default function AdminPage() {
             <button
               className="btn btn-danger"
               onClick={() => {
-                if (window.confirm("Are you sure? This will delete ALL teams and cannot be undone.")) {
+                if (window.confirm("Clear ALL golfer scores and team points? This cannot be undone.")) {
+                  clearScoresMut.mutate();
+                }
+              }}
+              disabled={clearScoresMut.isPending}
+            >
+              {clearScoresMut.isPending ? "Clearing…" : "🧹 Clear All Scores"}
+            </button>
+
+            <button
+              className="btn btn-danger"
+              onClick={() => {
+                if (window.confirm("Delete ALL teams? Players will need to re-draft. This cannot be undone.")) {
                   clearTeamsMut.mutate();
                 }
               }}

@@ -31,22 +31,19 @@ def init_db():
             salary      INTEGER NOT NULL DEFAULT 0,
             world_rank  INTEGER,
             country     TEXT,
-            -- Current tournament stats (refreshed end-of-round)
             current_round   INTEGER DEFAULT 0,
             round1_score    INTEGER,
             round2_score    INTEGER,
             round3_score    INTEGER,
             round4_score    INTEGER,
             total_score     INTEGER,
-            made_cut        INTEGER DEFAULT 1,  -- 1=in, 0=missed/WD
+            made_cut        INTEGER DEFAULT 1,
             finish_position INTEGER,
-            -- DK fantasy points (computed end-of-round)
             dk_r1_points    REAL DEFAULT 0,
             dk_r2_points    REAL DEFAULT 0,
             dk_r3_points    REAL DEFAULT 0,
             dk_r4_points    REAL DEFAULT 0,
             dk_total_points REAL DEFAULT 0,
-            -- Hole-level bonus tracking
             r1_birdies INTEGER DEFAULT 0, r1_eagles INTEGER DEFAULT 0,
             r1_bogeys  INTEGER DEFAULT 0, r1_doubles INTEGER DEFAULT 0,
             r1_worse   INTEGER DEFAULT 0, r1_pars    INTEGER DEFAULT 0,
@@ -103,7 +100,14 @@ def init_db():
 
 
 def _seed_golfers():
-    """Seed the 2026 Valero Texas Open field with DK salaries."""
+    """Seed golfers only if the table is empty — never wipes on redeploy."""
+    conn = get_conn()
+    count = conn.execute("SELECT COUNT(*) as n FROM golfers").fetchone()["n"]
+    if count > 0:
+        conn.close()
+        return 
+
+    cur = conn.cursor()
     golfers = [
         # (espn_id, name, salary, world_rank, country)
         ("4848",  "Tommy Fleetwood",         10500, 1,  "ENG"),
@@ -239,14 +243,6 @@ def _seed_golfers():
         ("5124",  "Isaiah Salinda",           6100, 131, "USA"),
         ("5125",  "Aaron Wise",               6100, 132, "USA"),
     ]
-
-    conn = get_conn()
-    cur = conn.cursor()
-
-    # Clear existing golfers and team associations first
-    cur.execute("DELETE FROM team_golfers")
-    cur.execute("DELETE FROM teams")
-    cur.execute("DELETE FROM golfers")
 
     for i, (espn_id, name, salary, rank, country) in enumerate(golfers):
         unique_espn = f"{espn_id}_{i}"

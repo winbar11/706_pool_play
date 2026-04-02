@@ -49,6 +49,7 @@ const api = {
       request("/api/admin/update-golfer", { method: "POST", body: JSON.stringify(body) }),
     setRound:     (n) => request(`/api/admin/set-round?round_num=${n}`, { method: "POST" }),
     clearTeams: () => request("/api/admin/clear-teams", { method: "POST" }),
+    clearScores: () => request("/api/admin/clear-scores", { method: "POST" }),
   },
 };
 
