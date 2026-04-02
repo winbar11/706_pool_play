@@ -162,7 +162,7 @@ export default function LeaderboardPage() {
                                       {g.total_score !== null && g.total_score !== undefined
                                         ? fmtScore(missed ? g.total_score + 8 : g.total_score)
                                         : "—"}
-                                      {g.finish_position && !missed
+                                      {g.finish_position && g.finish_position > 0 && !missed
                                         ? ` · ${g.finish_position === 1 ? "🏆 Winner" : `T${g.finish_position}`}`
                                         : ""}
                                     </div>

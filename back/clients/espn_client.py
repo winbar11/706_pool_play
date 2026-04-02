@@ -177,12 +177,12 @@ def _parse_score(s: str) -> Optional[int]:
         return None
 
 def _parse_position(pos: str) -> Optional[int]:
-    """Convert 'T4', '1', 'T26' etc to integer."""
     if not pos or pos in ("-", "--"):
         return None
     pos = pos.lstrip("T")
     try:
-        return int(pos)
+        result = int(pos)
+        return result if result > 0 else None  # never store 0
     except ValueError:
         return None
 
