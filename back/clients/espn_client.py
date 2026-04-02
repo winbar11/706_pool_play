@@ -14,9 +14,7 @@ logger = logging.getLogger(__name__)
 # TOURNEY_ID = "401811941"
 
 # VALERO TEXAS OPEN TOURNAMENT
-# TOURNEY_ID = "401811940"
-# Players Championship Test
-TOURNEY_ID = "401811937"
+TOURNEY_ID = "401811940"
 
 LEADERBOARD_URL = f"https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event={TOURNEY_ID}"
 SCORECARD_URL   = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scorecards/{athlete_id}?event={event_id}"
