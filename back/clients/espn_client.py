@@ -192,16 +192,18 @@ def _detect_round(competitor: dict) -> int:
 
 def calc_hole_stats_from_rounds(round_scores: dict) -> dict:
     """
-    ESPN leaderboard only gives round totals, not hole-by-hole.
-    Estimates birdies/bogeys from score vs par for DK calc.
-    Use Admin manual entry for exact hole stats.
+    ESPN leaderboard gives round totals as actual stroke counts (e.g. 68, 72).
+    Par at TPC San Antonio is 72.
+    Skip any round score that is 0 or unrealistically low (not yet played).
     """
     results = {}
     PAR = 72
 
     for r, score in round_scores.items():
-        if score is None:
+        # Skip if score is None, 0, or unrealistic (no round under 55 in pro golf)
+        if score is None or score < 55:
             continue
+
         diff = score - PAR
         if diff < 0:
             birdies = abs(diff)
