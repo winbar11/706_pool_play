@@ -150,8 +150,8 @@ export default function MyTeamPage() {
                 <div>
                   <div className="my-golfer-total" style={{
                     color: displayScore !== null && displayScore < 0 ? "var(--green-600)"
-                          : displayScore !== null && displayScore > 0 ? "#b91c1c"
-                          : "var(--text-primary)"
+                         : displayScore !== null && displayScore > 0 ? "#b91c1c"
+                         : "var(--text-primary)"
                   }}>
                     {fmtScore(displayScore)}
                   </div>
@@ -161,3 +161,14 @@ export default function MyTeamPage() {
             );
           })}
         </div>
+      </div>
+
+      <div className="card mt-2"
+        style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: "1.8" }}>
+        <strong style={{ color: "var(--text-primary)" }}>Scoring rules</strong><br />
+        Lowest cumulative score wins · Missed cut / WD = score + 8 penalty<br />
+        Best unique round of day = −1 shot · Solo round leader = −1 shot · Pick the winner = −5 shots
+      </div>
+    </div>
+  );
+}
