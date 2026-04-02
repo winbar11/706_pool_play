@@ -1,10 +1,18 @@
 import asyncio
 import logging
+import unicodedata
 from database.db import get_conn
 from clients.espn_client import fetch_leaderboard, parse_leaderboard
 from scoring.scoring import calc_all_team_scores
 
 logger = logging.getLogger(__name__)
+
+def normalize_name(name: str) -> str:
+    """Strip accents/diacritics for fuzzy matching."""
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', name)
+        if unicodedata.category(c) != 'Mn'
+    ).lower()
 
 async def refresh_scores():
     logger.info("=== Starting score refresh ===")
@@ -29,16 +37,30 @@ async def refresh_scores():
             espn_id = player["espn_id"]
             name    = player["name"]
 
+            # Try ESPN ID first
             cur.execute("SELECT * FROM golfers WHERE espn_id LIKE %s", (f"{espn_id}%",))
             row = cur.fetchone()
+
+            # Try exact name
             if not row:
                 cur.execute("SELECT * FROM golfers WHERE name LIKE %s", (f"%{name}%",))
                 row = cur.fetchone()
+
+            # Try normalized name (strips accents like ø, é, å)
+            if not row:
+                normalized = normalize_name(name)
+                cur.execute(
+                    "SELECT * FROM golfers WHERE LOWER(name) LIKE %s",
+                    (f"%{normalized}%",)
+                )
+                row = cur.fetchone()
+
             if not row:
                 logger.debug(f"No DB match for: {name}")
                 continue
 
             matched += 1
+            golfer        = dict(row)
             current_round = player.get("current_round", 0)
 
             updates = {
@@ -56,7 +78,7 @@ async def refresh_scores():
             set_clause = ", ".join(f"{k}=%s" for k in updates)
             cur.execute(
                 f"UPDATE golfers SET {set_clause} WHERE id=%s",
-                (*updates.values(), dict(row)["id"])
+                (*updates.values(), golfer["id"])
             )
 
         logger.info(f"Matched and updated {matched}/{len(players)} players")
@@ -113,7 +135,10 @@ async def refresh_scores():
         scores = calc_all_team_scores(all_teams)
 
         for team_id, result in scores.items():
-            logger.info(f"Team {team_id}: raw={result['raw']} bonus={result['bonus']} final={result['final']}")
+            logger.info(
+                f"Team {team_id}: raw={result['raw']} "
+                f"bonus={result['bonus']} final={result['final']}"
+            )
             cur.execute("""
                 UPDATE teams SET final_score=%s, bonus_shots=%s, dk_total_points=%s
                 WHERE id=%s
