@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "../utils/api";
+import { api } from "../utils/api.js";
 
 export default function AdminPage() {
   const qc = useQueryClient();
@@ -20,7 +20,7 @@ export default function AdminPage() {
   const currentRound = lbData?.settings?.current_round || "0";
 
   const notify = (m) => { setMsg(m); setErr(""); setTimeout(() => setMsg(""), 4000); };
-  const fail = (e)   => { setErr(e); setMsg(""); };
+  const fail = (e) => { setErr(e); setMsg(""); };
 
   const lockMut = useMutation({
     mutationFn: api.admin.lockTeams,
@@ -40,6 +40,11 @@ export default function AdminPage() {
   const roundMut = useMutation({
     mutationFn: (n) => api.admin.setRound(n),
     onSuccess: (_, n) => { qc.invalidateQueries(["leaderboard"]); notify(`Round set to ${n}.`); },
+    onError: (e) => fail(e.message),
+  });
+  const clearTeamsMut = useMutation({
+    mutationFn: api.admin.clearTeams,
+    onSuccess: () => { qc.invalidateQueries(["leaderboard"]); notify("All teams cleared."); },
     onError: (e) => fail(e.message),
   });
   const manualMut = useMutation({
@@ -84,18 +89,30 @@ export default function AdminPage() {
             {isLocked ? (
               <button className="btn btn-secondary" onClick={() => unlockMut.mutate()}
                 disabled={unlockMut.isPending}>
-                🔓 Unlock Teams
+                Unlock Teams
               </button>
             ) : (
               <button className="btn btn-primary" onClick={() => lockMut.mutate()}
                 disabled={lockMut.isPending}>
-                🔒 Lock Teams (start tournament)
+                Lock Teams (start tournament)
               </button>
             )}
 
             <button className="btn btn-secondary" onClick={() => refreshMut.mutate()}
               disabled={refreshMut.isPending}>
               {refreshMut.isPending ? "Refreshing…" : "⟳ Trigger Score Refresh Now"}
+            </button>
+
+            <button
+              className="btn btn-danger"
+              onClick={() => {
+                if (window.confirm("Are you sure? This will delete ALL teams and cannot be undone.")) {
+                  clearTeamsMut.mutate();
+                }
+              }}
+              disabled={clearTeamsMut.isPending}
+            >
+              {clearTeamsMut.isPending ? "Clearing…" : "🗑️ Clear All Teams"}
             </button>
           </div>
 
@@ -131,7 +148,7 @@ export default function AdminPage() {
                 return (
                   <tr key={u.id}>
                     <td>@{u.username}</td>
-                    <td style={{ color: team ? "var(--off-white)" : "var(--gray-500)" }}>
+                    <td style={{ color: team ? "var(--text-primary)" : "var(--gray-500)" }}>
                       {team ? team.team_name : "—"}
                     </td>
                     <td>
@@ -149,7 +166,7 @@ export default function AdminPage() {
         {/* Manual score entry */}
         <div className="card admin-section" style={{ gridColumn: "1 / -1" }}>
           <h3>Manual Score Entry (ESPN API fallback)</h3>
-          <p style={{ fontSize: "0.82rem", color: "var(--green-300)", marginBottom: "1rem" }}>
+          <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
             Use this if the ESPN API is unavailable. Enter hole stats for a golfer's round and DK points will be recalculated automatically.
           </p>
 

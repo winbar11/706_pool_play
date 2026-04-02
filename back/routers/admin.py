@@ -124,3 +124,14 @@ def set_round(round_num: int, authorization: str = Header(None)):
     conn.commit()
     conn.close()
     return {"message": f"Current round set to {round_num}"}
+
+
+@router.post("/clear-teams")
+def clear_teams(authorization: str = Header(None)):
+    get_admin_user(authorization=authorization)
+    conn = get_conn()
+    conn.execute("DELETE FROM team_golfers")
+    conn.execute("DELETE FROM teams")
+    conn.commit()
+    conn.close()
+    return {"message": "All teams cleared successfully"}

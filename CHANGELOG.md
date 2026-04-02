@@ -7,6 +7,7 @@ Added
 [0.0.4] - 2026.04.01
 - added entire field for Valero Texas Open testing
 - converted logo to .svg image type
+- added clear teams button
 
 Added
 [0.0.3] - 2026.04.01
