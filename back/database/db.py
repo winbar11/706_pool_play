@@ -1,31 +1,31 @@
-import sqlite3
 import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
-DB_PATH = os.environ.get("DB_PATH", "masters_pool.db")
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 def get_conn():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA foreign_keys=ON")
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
 
 def init_db():
     conn = get_conn()
     cur = conn.cursor()
 
-    cur.executescript("""
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            id          SERIAL PRIMARY KEY,
             username    TEXT UNIQUE NOT NULL,
             email       TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
             is_admin    INTEGER DEFAULT 0,
             created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+        )
+    """)
 
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS golfers (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            id          SERIAL PRIMARY KEY,
             espn_id     TEXT UNIQUE,
             name        TEXT NOT NULL,
             salary      INTEGER NOT NULL DEFAULT 0,
@@ -65,10 +65,12 @@ def init_db():
             r4_ace     INTEGER DEFAULT 0, r4_double_eagle INTEGER DEFAULT 0,
             r4_bogey_free INTEGER DEFAULT 0, r4_birdie_streak INTEGER DEFAULT 0,
             all4_under70  INTEGER DEFAULT 0
-        );
+        )
+    """)
 
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS teams (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            id          SERIAL PRIMARY KEY,
             user_id     INTEGER NOT NULL REFERENCES users(id),
             team_name   TEXT NOT NULL,
             total_salary INTEGER NOT NULL,
@@ -76,38 +78,45 @@ def init_db():
             dk_total_points REAL DEFAULT 0,
             created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             UNIQUE(user_id)
-        );
+        )
+    """)
 
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS team_golfers (
             team_id     INTEGER NOT NULL REFERENCES teams(id),
             golfer_id   INTEGER NOT NULL REFERENCES golfers(id),
             PRIMARY KEY (team_id, golfer_id)
-        );
+        )
+    """)
 
+    cur.execute("""
         CREATE TABLE IF NOT EXISTS tournament_settings (
             key   TEXT PRIMARY KEY,
             value TEXT
-        );
-
-        INSERT OR IGNORE INTO tournament_settings VALUES ('teams_locked', '0');
-        INSERT OR IGNORE INTO tournament_settings VALUES ('current_round', '0');
-        INSERT OR IGNORE INTO tournament_settings VALUES ('tournament_year', '2026');
+        )
     """)
 
+    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('teams_locked', '0') ON CONFLICT (key) DO NOTHING")
+    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('current_round', '0') ON CONFLICT (key) DO NOTHING")
+    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('tournament_year', '2026') ON CONFLICT (key) DO NOTHING")
+
     conn.commit()
+    cur.close()
     conn.close()
     _seed_golfers()
 
 
 def _seed_golfers():
-    """Seed golfers only if the table is empty — never wipes on redeploy."""
+    """Seed golfers only if the table is empty."""
     conn = get_conn()
-    count = conn.execute("SELECT COUNT(*) as n FROM golfers").fetchone()["n"]
-    if count > 0:
-        conn.close()
-        return 
-
     cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as n FROM golfers")
+    count = cur.fetchone()["n"]
+    if count > 0:
+        cur.close()
+        conn.close()
+        return
+
     golfers = [
         # (espn_id, name, salary, world_rank, country)
         ("4848",  "Tommy Fleetwood",         10500, 1,  "ENG"),
@@ -248,8 +257,9 @@ def _seed_golfers():
         unique_espn = f"{espn_id}_{i}"
         cur.execute("""
             INSERT INTO golfers (espn_id, name, salary, world_rank, country)
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s)
         """, (unique_espn, name, salary, rank, country))
 
     conn.commit()
+    cur.close()
     conn.close()

@@ -12,8 +12,10 @@ router = APIRouter()
 def lock_teams(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
     conn = get_conn()
-    conn.execute("UPDATE tournament_settings SET value='1' WHERE key='teams_locked'")
+    cur = conn.cursor()
+    cur.execute("UPDATE tournament_settings SET value='1' WHERE key='teams_locked'")
     conn.commit()
+    cur.close()
     conn.close()
     return {"message": "Teams locked. No more changes allowed."}
 
@@ -21,8 +23,10 @@ def lock_teams(authorization: str = Header(None)):
 def unlock_teams(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
     conn = get_conn()
-    conn.execute("UPDATE tournament_settings SET value='0' WHERE key='teams_locked'")
+    cur = conn.cursor()
+    cur.execute("UPDATE tournament_settings SET value='0' WHERE key='teams_locked'")
     conn.commit()
+    cur.close()
     conn.close()
     return {"message": "Teams unlocked."}
 
@@ -49,59 +53,62 @@ class ManualGolferUpdate(BaseModel):
 
 @router.post("/update-golfer")
 def manual_update_golfer(req: ManualGolferUpdate, authorization: str = Header(None)):
-    """Manual fallback if ESPN API is unavailable."""
     get_admin_user(authorization=authorization)
     conn = get_conn()
+    cur = conn.cursor()
     r = req.round_num
-    golfer = conn.execute("SELECT * FROM golfers WHERE id=?", (req.golfer_id,)).fetchone()
+
+    cur.execute("SELECT * FROM golfers WHERE id=%s", (req.golfer_id,))
+    golfer = cur.fetchone()
     if not golfer:
+        cur.close()
         conn.close()
         raise HTTPException(404, "Golfer not found")
 
-    from scoring import calc_round_points, calc_total_points
     round_pts = calc_round_points(
         req.birdies, req.eagles, req.bogeys, req.doubles,
         req.worse, req.pars, req.ace, req.double_eagle,
         req.bogey_free, req.birdie_streak
     )
 
-    conn.execute(f"""
+    cur.execute(f"""
         UPDATE golfers SET
-            r{r}_birdies=?, r{r}_eagles=?, r{r}_bogeys=?, r{r}_doubles=?,
-            r{r}_worse=?, r{r}_pars=?, r{r}_ace=?, r{r}_double_eagle=?,
-            r{r}_bogey_free=?, r{r}_birdie_streak=?,
-            round{r}_score=?, dk_r{r}_points=?
-        WHERE id=?
+            r{r}_birdies=%s, r{r}_eagles=%s, r{r}_bogeys=%s, r{r}_doubles=%s,
+            r{r}_worse=%s, r{r}_pars=%s, r{r}_ace=%s, r{r}_double_eagle=%s,
+            r{r}_bogey_free=%s, r{r}_birdie_streak=%s,
+            round{r}_score=%s, dk_r{r}_points=%s
+        WHERE id=%s
     """, (req.birdies, req.eagles, req.bogeys, req.doubles,
             req.worse, req.pars, req.ace, req.double_eagle,
             req.bogey_free, req.birdie_streak,
             req.round_score, round_pts, req.golfer_id))
 
-    # Recompute total
-    updated = dict(conn.execute("SELECT * FROM golfers WHERE id=?",
-                                (req.golfer_id,)).fetchone())
+    cur.execute("SELECT * FROM golfers WHERE id=%s", (req.golfer_id,))
+    updated = dict(cur.fetchone())
     total = calc_total_points(updated)
-    conn.execute("UPDATE golfers SET dk_total_points=? WHERE id=?",
+    cur.execute("UPDATE golfers SET dk_total_points=%s WHERE id=%s",
                 (total, req.golfer_id))
 
-    # Recompute all teams containing this golfer
-    teams = conn.execute("""
+    cur.execute("""
         SELECT t.* FROM teams t
         JOIN team_golfers tg ON tg.team_id = t.id
-        WHERE tg.golfer_id = ?
-    """, (req.golfer_id,)).fetchall()
+        WHERE tg.golfer_id = %s
+    """, (req.golfer_id,))
+    teams = cur.fetchall()
 
     for team in teams:
-        golfers = conn.execute("""
+        cur.execute("""
             SELECT g.* FROM golfers g
             JOIN team_golfers tg ON tg.golfer_id = g.id
-            WHERE tg.team_id = ?
-        """, (team["id"],)).fetchall()
+            WHERE tg.team_id = %s
+        """, (team["id"],))
+        golfers = cur.fetchall()
         total_pts = calc_team_points([dict(g) for g in golfers])
-        conn.execute("UPDATE teams SET dk_total_points=? WHERE id=?",
+        cur.execute("UPDATE teams SET dk_total_points=%s WHERE id=%s",
                     (total_pts, team["id"]))
 
     conn.commit()
+    cur.close()
     conn.close()
     return {"message": f"Golfer updated. Round {r} DK pts: {round_pts}"}
 
@@ -109,9 +116,10 @@ def manual_update_golfer(req: ManualGolferUpdate, authorization: str = Header(No
 def list_users(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
     conn = get_conn()
-    users = conn.execute(
-        "SELECT id, username, email, is_admin, created_at FROM users ORDER BY created_at"
-    ).fetchall()
+    cur = conn.cursor()
+    cur.execute("SELECT id, username, email, is_admin, created_at FROM users ORDER BY created_at")
+    users = cur.fetchall()
+    cur.close()
     conn.close()
     return {"users": [dict(u) for u in users]}
 
@@ -119,29 +127,32 @@ def list_users(authorization: str = Header(None)):
 def set_round(round_num: int, authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
     conn = get_conn()
-    conn.execute("UPDATE tournament_settings SET value=? WHERE key='current_round'",
+    cur = conn.cursor()
+    cur.execute("UPDATE tournament_settings SET value=%s WHERE key='current_round'",
                 (str(round_num),))
     conn.commit()
+    cur.close()
     conn.close()
     return {"message": f"Current round set to {round_num}"}
-
 
 @router.post("/clear-teams")
 def clear_teams(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
     conn = get_conn()
-    conn.execute("DELETE FROM team_golfers")
-    conn.execute("DELETE FROM teams")
+    cur = conn.cursor()
+    cur.execute("DELETE FROM team_golfers")
+    cur.execute("DELETE FROM teams")
     conn.commit()
+    cur.close()
     conn.close()
     return {"message": "All teams cleared successfully"}
-
 
 @router.post("/clear-scores")
 def clear_scores(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
     conn = get_conn()
-    conn.execute("""
+    cur = conn.cursor()
+    cur.execute("""
         UPDATE golfers SET
             current_round=0, total_score=NULL, made_cut=1, finish_position=NULL,
             round1_score=NULL, round2_score=NULL, round3_score=NULL, round4_score=NULL,
@@ -156,9 +167,9 @@ def clear_scores(authorization: str = Header(None)):
             r4_birdies=0, r4_eagles=0, r4_bogeys=0, r4_doubles=0, r4_worse=0,
             r4_pars=0, r4_ace=0, r4_double_eagle=0, r4_bogey_free=0, r4_birdie_streak=0,
             all4_under70=0
-        """)
-    # Reset all team points too
-    conn.execute("UPDATE teams SET dk_total_points=0")
+    """)
+    cur.execute("UPDATE teams SET dk_total_points=0")
     conn.commit()
+    cur.close()
     conn.close()
     return {"message": "All scores cleared successfully"}

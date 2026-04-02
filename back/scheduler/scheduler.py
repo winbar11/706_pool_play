@@ -1,8 +1,3 @@
-"""
-End-of-round score refresh job.
-Fetches ESPN data, updates golfer stats, recalculates DK points,
-updates all team totals.
-"""
 import asyncio
 import logging
 from database.db import get_conn
@@ -26,22 +21,19 @@ async def refresh_scores():
 
         logger.info(f"Processing {len(players)} players from ESPN")
         conn = get_conn()
+        cur = conn.cursor()
         matched = 0
 
         for player in players:
             espn_id = player["espn_id"]
             name    = player["name"]
 
-            # Match by ESPN ID first, then fall back to name
-            row = conn.execute(
-                "SELECT * FROM golfers WHERE espn_id LIKE ?", (f"{espn_id}%",)
-            ).fetchone()
+            cur.execute("SELECT * FROM golfers WHERE espn_id LIKE %s", (f"{espn_id}%",))
+            row = cur.fetchone()
 
             if not row:
-                # Try name match — strip accents won't matter for most names
-                row = conn.execute(
-                    "SELECT * FROM golfers WHERE name LIKE ?", (f"%{name}%",)
-                ).fetchone()
+                cur.execute("SELECT * FROM golfers WHERE name LIKE %s", (f"%{name}%",))
+                row = cur.fetchone()
 
             if not row:
                 logger.debug(f"No DB match for: {name} (ESPN id: {espn_id})")
@@ -52,19 +44,17 @@ async def refresh_scores():
             current_round = player.get("current_round", 0)
 
             updates = {
-                "current_round":  current_round,
-                "total_score":    player.get("total_score"),
-                "made_cut":       player.get("made_cut", 1),
+                "current_round":   current_round,
+                "total_score":     player.get("total_score"),
+                "made_cut":        player.get("made_cut", 1),
                 "finish_position": player.get("finish_position"),
             }
 
-            # Store round scores
             for r in range(1, 5):
                 rs = player.get(f"round{r}_score")
                 if rs is not None:
                     updates[f"round{r}_score"] = rs
 
-            # Estimate hole stats from round scores for DK calc
             round_scores = {
                 r: player.get(f"round{r}_score")
                 for r in range(1, current_round + 1)
@@ -92,31 +82,32 @@ async def refresh_scores():
                 )
                 updates[f"dk_r{r}_points"] = round_pts
 
-            # Recalculate total DK points
             merged = {**golfer, **updates}
             updates["dk_total_points"] = calc_total_points(merged)
 
-            set_clause = ", ".join(f"{k}=?" for k in updates)
-            conn.execute(
-                f"UPDATE golfers SET {set_clause} WHERE id=?",
+            set_clause = ", ".join(f"{k}=%s" for k in updates)
+            cur.execute(
+                f"UPDATE golfers SET {set_clause} WHERE id=%s",
                 (*updates.values(), golfer["id"])
             )
 
         logger.info(f"Matched and updated {matched}/{len(players)} players")
 
-        # Recalculate all team totals
-        teams = conn.execute("SELECT * FROM teams").fetchall()
+        cur.execute("SELECT * FROM teams")
+        teams = cur.fetchall()
         for team in teams:
-            golfer_rows = conn.execute("""
+            cur.execute("""
                 SELECT g.* FROM golfers g
                 JOIN team_golfers tg ON tg.golfer_id = g.id
-                WHERE tg.team_id = ?
-            """, (team["id"],)).fetchall()
+                WHERE tg.team_id = %s
+            """, (team["id"],))
+            golfer_rows = cur.fetchall()
             total = calc_team_points([dict(g) for g in golfer_rows])
-            conn.execute("UPDATE teams SET dk_total_points=? WHERE id=?",
-                            (total, team["id"]))
+            cur.execute("UPDATE teams SET dk_total_points=%s WHERE id=%s",
+                        (total, team["id"]))
 
         conn.commit()
+        cur.close()
         conn.close()
         logger.info("=== Score refresh complete ===")
 

@@ -17,58 +17,64 @@ class TeamSubmit(BaseModel):
 def submit_team(req: TeamSubmit, authorization: str = Header(None)):
     user = get_current_user(authorization)
     conn = get_conn()
+    cur = conn.cursor()
 
-    # Check if teams are locked
-    locked = conn.execute(
-        "SELECT value FROM tournament_settings WHERE key='teams_locked'"
-    ).fetchone()
+    cur.execute("SELECT value FROM tournament_settings WHERE key='teams_locked'")
+    locked = cur.fetchone()
     if locked and locked["value"] == "1":
+        cur.close()
         conn.close()
         raise HTTPException(400, "Tournament has started — teams are locked")
 
     if len(req.golfer_ids) != ROSTER_SIZE:
+        cur.close()
         conn.close()
         raise HTTPException(400, f"Must select exactly {ROSTER_SIZE} golfers")
 
     if len(set(req.golfer_ids)) != ROSTER_SIZE:
+        cur.close()
         conn.close()
         raise HTTPException(400, "Duplicate golfers not allowed")
 
     # Validate golfers + salary cap
     golfers = []
     for gid in req.golfer_ids:
-        g = conn.execute("SELECT * FROM golfers WHERE id=?", (gid,)).fetchone()
+        cur.execute("SELECT * FROM golfers WHERE id=%s", (gid,))
+        g = cur.fetchone()
         if not g:
+            cur.close()
             conn.close()
             raise HTTPException(404, f"Golfer id {gid} not found")
         golfers.append(dict(g))
 
     total_salary = sum(g["salary"] for g in golfers)
     if total_salary > SALARY_CAP:
+        cur.close()
         conn.close()
         raise HTTPException(400,
             f"Salary cap exceeded: ${total_salary:,} > ${SALARY_CAP:,}")
 
     # Delete existing team if any
-    existing = conn.execute(
-        "SELECT id FROM teams WHERE user_id=?", (user["id"],)
-    ).fetchone()
+    cur.execute("SELECT id FROM teams WHERE user_id=%s", (user["id"],))
+    existing = cur.fetchone()
     if existing:
-        conn.execute("DELETE FROM team_golfers WHERE team_id=?", (existing["id"],))
-        conn.execute("DELETE FROM teams WHERE id=?", (existing["id"],))
+        cur.execute("DELETE FROM team_golfers WHERE team_id=%s", (existing["id"],))
+        cur.execute("DELETE FROM teams WHERE id=%s", (existing["id"],))
 
     # Insert new team
     dk_pts = calc_team_points(golfers)
-    cur = conn.execute(
-        "INSERT INTO teams (user_id, team_name, total_salary, dk_total_points) VALUES (?,?,?,?)",
+    cur.execute(
+        "INSERT INTO teams (user_id, team_name, total_salary, dk_total_points) VALUES (%s,%s,%s,%s) RETURNING id",
         (user["id"], req.team_name, total_salary, dk_pts)
     )
-    team_id = cur.lastrowid
+    team_id = cur.fetchone()["id"]
+
     for gid in req.golfer_ids:
-        conn.execute("INSERT INTO team_golfers (team_id, golfer_id) VALUES (?,?)",
-                     (team_id, gid))
+        cur.execute("INSERT INTO team_golfers (team_id, golfer_id) VALUES (%s,%s)",
+                    (team_id, gid))
 
     conn.commit()
+    cur.close()
     conn.close()
     return {"message": "Team submitted successfully", "team_id": team_id,
             "total_salary": total_salary, "dk_total_points": dk_pts}
@@ -77,19 +83,23 @@ def submit_team(req: TeamSubmit, authorization: str = Header(None)):
 def my_team(authorization: str = Header(None)):
     user = get_current_user(authorization)
     conn = get_conn()
-    team = conn.execute(
-        "SELECT * FROM teams WHERE user_id=?", (user["id"],)
-    ).fetchone()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM teams WHERE user_id=%s", (user["id"],))
+    team = cur.fetchone()
     if not team:
+        cur.close()
         conn.close()
         return {"team": None}
 
-    golfers = conn.execute("""
+    cur.execute("""
         SELECT g.* FROM golfers g
         JOIN team_golfers tg ON tg.golfer_id = g.id
-        WHERE tg.team_id = ?
+        WHERE tg.team_id = %s
         ORDER BY g.dk_total_points DESC
-    """, (team["id"],)).fetchall()
+    """, (team["id"],))
+    golfers = cur.fetchall()
+    cur.close()
     conn.close()
     return {
         "team": {**dict(team), "golfers": [dict(g) for g in golfers]}
@@ -98,15 +108,22 @@ def my_team(authorization: str = Header(None)):
 @router.get("/{team_id}")
 def get_team(team_id: int):
     conn = get_conn()
-    team = conn.execute("SELECT * FROM teams WHERE id=?", (team_id,)).fetchone()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM teams WHERE id=%s", (team_id,))
+    team = cur.fetchone()
     if not team:
+        cur.close()
         conn.close()
         raise HTTPException(404, "Team not found")
-    golfers = conn.execute("""
+
+    cur.execute("""
         SELECT g.* FROM golfers g
         JOIN team_golfers tg ON tg.golfer_id = g.id
-        WHERE tg.team_id = ?
+        WHERE tg.team_id = %s
         ORDER BY g.dk_total_points DESC
-    """, (team_id,)).fetchall()
+    """, (team_id,))
+    golfers = cur.fetchall()
+    cur.close()
     conn.close()
     return {**dict(team), "golfers": [dict(g) for g in golfers]}

@@ -1,9 +1,8 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, HTTPException, Header
+from pydantic import BaseModel
 from database.db import get_conn
 from utils.auth_utils import hash_password, verify_password, create_token
 from dependencies import get_current_user
-from fastapi import Header
 
 router = APIRouter()
 
@@ -24,26 +23,33 @@ def register(req: RegisterRequest):
         raise HTTPException(400, "Username must be at least 3 characters")
 
     conn = get_conn()
-    existing = conn.execute(
-        "SELECT id FROM users WHERE username=? OR email=?",
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT id FROM users WHERE username=%s OR email=%s",
         (req.username.lower(), req.email.lower())
-    ).fetchone()
+    )
+    existing = cur.fetchone()
     if existing:
+        cur.close()
         conn.close()
         raise HTTPException(400, "Username or email already taken")
 
     pw_hash = hash_password(req.password)
-    # First user is auto-admin
-    count = conn.execute("SELECT COUNT(*) as n FROM users").fetchone()["n"]
+
+    cur.execute("SELECT COUNT(*) as n FROM users")
+    count = cur.fetchone()["n"]
     is_admin = 1 if count == 0 else 0
 
-    cur = conn.execute(
-        "INSERT INTO users (username, email, password_hash, is_admin) VALUES (?,?,?,?)",
+    cur.execute(
+        "INSERT INTO users (username, email, password_hash, is_admin) VALUES (%s,%s,%s,%s) RETURNING id",
         (req.username.lower(), req.email.lower(), pw_hash, is_admin)
     )
+    user_id = cur.fetchone()["id"]
     conn.commit()
-    user_id = cur.lastrowid
+    cur.close()
     conn.close()
+
     token = create_token(user_id, req.username.lower(), bool(is_admin))
     return {"token": token, "username": req.username.lower(),
             "is_admin": bool(is_admin), "user_id": user_id}
@@ -51,12 +57,15 @@ def register(req: RegisterRequest):
 @router.post("/login")
 def login(req: LoginRequest):
     conn = get_conn()
-    user = conn.execute(
-        "SELECT * FROM users WHERE username=?", (req.username.lower(),)
-    ).fetchone()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE username=%s", (req.username.lower(),))
+    user = cur.fetchone()
+    cur.close()
     conn.close()
+
     if not user or not verify_password(req.password, user["password_hash"]):
         raise HTTPException(401, "Invalid username or password")
+
     token = create_token(user["id"], user["username"], bool(user["is_admin"]))
     return {"token": token, "username": user["username"],
             "is_admin": bool(user["is_admin"]), "user_id": user["id"]}
