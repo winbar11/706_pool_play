@@ -122,7 +122,6 @@ def _seed_golfers():
         ("5014",  "Stephan Jaeger",           7400, 22, "GER"),
         ("5015",  "Davis Thompson",           7500, 23, "USA"),
         ("5016",  "Andrew Novak",             7300, 24, "USA"),
-        ("5017",  "Daniel Berger",            7600, 25, "USA"),
         ("5019",  "Will Zalatoris",           7100, 26, "USA"),
         ("5020",  "Alex Smalley",             7000, 27, "USA"),
         ("5021",  "Lucas Glover",             7200, 28, "USA"),
