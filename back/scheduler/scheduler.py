@@ -64,11 +64,14 @@ async def refresh_scores():
             current_round = player.get("current_round", 0)
 
             updates = {
-                "current_round":   current_round,
-                "total_score":     player.get("total_score"),
-                "made_cut":        player.get("made_cut", 1),
-                "finish_position": player.get("finish_position"),
-            }
+                        "current_round":   current_round,
+                        "total_score":     player.get("total_score"),
+                        "made_cut":        player.get("made_cut", 1),
+                    }
+            # Only update finish_position if it's a real value
+            finish_pos = player.get("finish_position")
+            if finish_pos is not None and finish_pos > 0:
+                updates["finish_position"] = finish_pos
 
             for r in range(1, 5):
                 rs = player.get(f"round{r}_score")
