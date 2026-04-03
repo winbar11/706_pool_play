@@ -77,7 +77,10 @@ def parse_leaderboard(data: dict) -> list[dict]:
                             score_to_par = 0
                     break
 
-            # Round scores from linescores — only store completed rounds (>= 60 strokes)
+            # Round scores from linescores — only store completed rounds (>= 60 strokes).
+            # Skip the current period for in-progress players: their linescore is a
+            # running stroke count (e.g. 63 through 9 holes) that looks like a low
+            # score but isn't a finished round.
             linescores   = c.get("linescores", [])
             round_scores = {}
             for ls in linescores:
@@ -85,7 +88,9 @@ def parse_leaderboard(data: dict) -> list[dict]:
                 val    = ls.get("value")
                 if period and val is not None:
                     score_val = float(val)
-                    if score_val >= 60:
+                    if score_val >= 60 and not (
+                        status_name == "STATUS_IN_PROGRESS" and period == current_round
+                    ):
                         round_scores[period] = int(score_val)
 
             players.append({
@@ -95,6 +100,7 @@ def parse_leaderboard(data: dict) -> list[dict]:
                 "total_score":     score_to_par,
                 "current_round":   current_round,
                 "made_cut":        made_cut,
+                "in_progress":     status_name == "STATUS_IN_PROGRESS",
                 "round1_score":    round_scores.get(1),
                 "round2_score":    round_scores.get(2),
                 "round3_score":    round_scores.get(3),

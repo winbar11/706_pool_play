@@ -79,10 +79,14 @@ async def refresh_scores():
             if finish_pos is not None and finish_pos > 0:
                 updates["finish_position"] = finish_pos
 
+            in_progress = player.get("in_progress", False)
             for r in range(1, 5):
                 rs = player.get(f"round{r}_score")
                 if rs is not None:
                     updates[f"round{r}_score"] = rs
+                elif in_progress and r == current_round:
+                    # Player is mid-round — clear any stale partial stroke count
+                    updates[f"round{r}_score"] = None
 
             set_clause = ", ".join(f"{k}=%s" for k in updates)
             cur.execute(

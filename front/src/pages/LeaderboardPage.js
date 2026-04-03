@@ -10,14 +10,32 @@ function fmtScore(score) {
   return score > 0 ? `+${score}` : `${score}`;
 }
 
-function fmtRound(golfers, roundKey) {
-  const scores = golfers
-    .map(g => g[roundKey])
-    .filter(s => s !== null && s !== undefined && s >= 60);
-  if (scores.length === 0) return "—";
-  const total = scores.reduce((s, v) => s + v, 0);
-  const toPar = total - (72 * scores.length);
-  return fmtScore(toPar);
+function fmtRound(golfers, roundNum, currentRound) {
+  const roundKey = `round${roundNum}_score`;
+  let total = 0;
+  let hasScore = false;
+
+  for (const g of golfers) {
+    const s = g[roundKey];
+    if (s !== null && s !== undefined && s >= 60) {
+      // Completed round: convert stroke total to score-to-par
+      total += s - 72;
+      hasScore = true;
+    } else if (roundNum === currentRound && (s === null || s === undefined)) {
+      // Active round, golfer hasn't finished yet — use their live total_score
+      // adjusted for previously completed rounds so we isolate just this round
+      const prevRoundsPar = [1, 2, 3, 4]
+        .filter(r => r < roundNum)
+        .reduce((acc, r) => {
+          const rs = g[`round${r}_score`];
+          return (rs !== null && rs !== undefined && rs >= 60) ? acc + (rs - 72) : acc;
+        }, 0);
+      total += (g.total_score ?? 0) - prevRoundsPar;
+      hasScore = true;
+    }
+  }
+
+  return hasScore ? fmtScore(total) : "—";
 }
 
 function RoundPills({ current }) {
@@ -129,10 +147,10 @@ export default function LeaderboardPage() {
                         </div>
                         <div className="owner">@{team.username}</div>
                       </td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, "round1_score")}</td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, "round2_score")}</td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, "round3_score")}</td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, "round4_score")}</td>
+                      <td className="dk-points-small">{fmtRound(team.golfers, 1, currentRound)}</td>
+                      <td className="dk-points-small">{fmtRound(team.golfers, 2, currentRound)}</td>
+                      <td className="dk-points-small">{fmtRound(team.golfers, 3, currentRound)}</td>
+                      <td className="dk-points-small">{fmtRound(team.golfers, 4, currentRound)}</td>
                       <td className="dk-points-small" style={{
                         color: bonusShots < 0 ? "var(--green-600)" : "var(--text-muted)",
                         fontWeight: bonusShots < 0 ? "600" : "400"
