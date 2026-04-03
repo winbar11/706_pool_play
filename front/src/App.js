@@ -8,6 +8,7 @@ import LeaderboardPage from "./pages/LeaderboardPage.js";
 import DraftPage from "./pages/DraftPage.js";
 import MyTeamPage from "./pages/MyTeamPage.js";
 import AdminPage from "./pages/AdminPage.js";
+import RulesPage from "./pages/RulesPage.js";
 import "./index.css";
 
 const qc = new QueryClient({ defaultOptions: { queries: { staleTime: 60_000 } } });
@@ -38,6 +39,7 @@ export default function App() {
               <Route index element={<LeaderboardPage />} />
               <Route path="draft"   element={<DraftPage />} />
               <Route path="my-team" element={<MyTeamPage />} />
+              <Route path="rules"   element={<RulesPage />} />
               <Route path="admin"   element={<AdminRoute><AdminPage /></AdminRoute>} />
             </Route>
           </Routes>
