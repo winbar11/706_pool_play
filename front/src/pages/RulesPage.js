@@ -125,10 +125,7 @@ export default function RulesPage() {
           />
         </div>
 
-        <p style={{ marginTop: "1rem", fontSize: "0.875rem", color: "var(--text-muted)" }}>
-          Tip: A golfer who plays all 4 rounds but finishes +20 is still better than a golfer who
-          misses the cut at +4 (+4 + 8 = +12 penalty score).
-        </p>
+
       </div>
 
       {/* ── Salary Cap ── */}
