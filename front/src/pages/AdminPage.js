@@ -203,7 +203,7 @@ export default function AdminPage() {
                   }
                 }}
               >
-                {deleteTeamsMut.isPending ? "Deleting…" : `🗑️ Delete Selected (${selectedTeamIds.length})`}
+                {deleteTeamsMut.isPending ? "Deleting…" : `Delete Selected (${selectedTeamIds.length})`}
               </button>
             )}
           </div>
