@@ -119,10 +119,10 @@ export default function LeaderboardPage() {
               <tr>
                 <th style={{ width: 50 }}>Rank</th>
                 <th>Team</th>
-                <th className="right" style={{ width: 60 }}>R1</th>
-                <th className="right" style={{ width: 60 }}>R2</th>
-                <th className="right" style={{ width: 60 }}>R3</th>
-                <th className="right" style={{ width: 60 }}>R4</th>
+                <th className={`right col-round ${currentRound <= 1 ? "col-round-current" : ""}`} style={{ width: 60 }}>R1</th>
+                <th className={`right col-round ${currentRound === 2 ? "col-round-current" : ""}`} style={{ width: 60 }}>R2</th>
+                <th className={`right col-round ${currentRound === 3 ? "col-round-current" : ""}`} style={{ width: 60 }}>R3</th>
+                <th className={`right col-round ${currentRound === 4 ? "col-round-current" : ""}`} style={{ width: 60 }}>R4</th>
                 <th className="right" style={{ width: 70 }}>Bonus</th>
                 <th className="right" style={{ width: 80 }}>Score</th>
               </tr>
@@ -150,10 +150,10 @@ export default function LeaderboardPage() {
                         </div>
                         <div className="owner">@{team.username}</div>
                       </td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, 1)}</td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, 2)}</td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, 3)}</td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, 4)}</td>
+                      <td className={`dk-points-small col-round ${currentRound <= 1 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 1)}</td>
+                      <td className={`dk-points-small col-round ${currentRound === 2 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 2)}</td>
+                      <td className={`dk-points-small col-round ${currentRound === 3 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 3)}</td>
+                      <td className={`dk-points-small col-round ${currentRound === 4 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 4)}</td>
                       <td className="dk-points-small" style={{
                         color: bonusShots < 0 ? "var(--green-600)" : "var(--text-muted)",
                         fontWeight: bonusShots < 0 ? "600" : "400"

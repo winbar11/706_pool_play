@@ -979,17 +979,15 @@ body {
 .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
 .empty-state h3 { color: var(--text-primary); margin-bottom: 0.5rem; }
 
-/* ── Mobile leaderboard: hide R2/R3/R4/Bonus, keep Rank/Team/R1/Score ── */
+/* ── Mobile leaderboard: show current round + Score, hide others ── */
 @media (max-width: 480px) {
-  .leaderboard-table th:nth-child(4),
-  .leaderboard-table th:nth-child(5),
-  .leaderboard-table th:nth-child(6),
+  .leaderboard-table .col-round,
   .leaderboard-table th:nth-child(7),
-  .leaderboard-table td:nth-child(4),
-  .leaderboard-table td:nth-child(5),
-  .leaderboard-table td:nth-child(6),
   .leaderboard-table td:nth-child(7) {
     display: none;
+  }
+  .leaderboard-table .col-round-current {
+    display: table-cell;
   }
 
   .leaderboard-table th,
