@@ -136,8 +136,6 @@ def _seed_golfers():
         ("5031",  "Billy Horschel",           7000, 38, "USA"),
         ("5032",  "Jhonattan Vegas",          6600, 39, "VEN"),
         ("5033",  "Nick Hardy",               6500, 40, "USA"),
-        ("9843",  "Jake Knapp",               6800, 41, "USA"),
-        ("5035",  "Chris Gotterup",           6700, 42, "USA"),
         ("5036",  "Sudarshan Yellamaraju",    6500, 43, "USA"),
         ("5037",  "Jimmy Walker",             6400, 44, "USA"),
         ("8973",  "Max Homa",                 7700, 45, "USA"),
