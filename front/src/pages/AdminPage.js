@@ -141,7 +141,7 @@ export default function AdminPage() {
               <button className="btn btn-primary"
                 onClick={() => tournamentCompleteMut.mutate(true)}
                 disabled={tournamentCompleteMut.isPending}>
-                🏆 Mark Tournament Complete (apply winner bonus)
+                Tourney Complete (Winner Bonus)
               </button>
             )}
 
