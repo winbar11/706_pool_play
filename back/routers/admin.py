@@ -99,7 +99,11 @@ def manual_update_golfer(req: ManualGolferUpdate, authorization: str = Header(No
         team_dict["golfers"] = [dict(g) for g in cur.fetchall()]
         all_teams.append(team_dict)
 
-    scores = calc_all_team_scores(all_teams)
+    cur.execute("SELECT value FROM tournament_settings WHERE key='tournament_complete'")
+    tc_row = cur.fetchone()
+    tournament_complete = tc_row is not None and tc_row["value"] == "1"
+
+    scores = calc_all_team_scores(all_teams, tournament_complete)
     for team_id, result in scores.items():
         cur.execute("""
             UPDATE teams SET final_score=%s, bonus_shots=%s, dk_total_points=%s
@@ -133,6 +137,20 @@ def set_round(round_num: int, authorization: str = Header(None)):
     cur.close()
     conn.close()
     return {"message": f"Current round set to {round_num}"}
+
+@router.post("/set-tournament-complete")
+def set_tournament_complete(complete: bool, authorization: str = Header(None)):
+    get_admin_user(authorization=authorization)
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE tournament_settings SET value=%s WHERE key='tournament_complete'",
+        ("1" if complete else "0",)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {"message": "Tournament marked complete." if complete else "Tournament marked in-progress."}
 
 class DeleteTeamsRequest(BaseModel):
     team_ids: List[int]

@@ -23,6 +23,7 @@ export default function MyTeamPage() {
 
   const team     = data?.team;
   const isLocked = lbData?.settings?.teams_locked === "1";
+  const isTournamentComplete = lbData?.settings?.tournament_complete === "1";
   const teams    = lbData?.teams || [];
   const myRank   = teams.findIndex(t => t.id === team?.id) + 1;
 
@@ -115,7 +116,7 @@ export default function MyTeamPage() {
             const missed       = g.made_cut === 0;
             const isLeader     = !!(g.solo_leader_r1 || g.solo_leader_r2 ||
                                   g.solo_leader_r3 || g.solo_leader_r4);
-            const isWinner     = g.finish_position === 1 && !missed && g.current_round >= 4;
+            const isWinner     = isTournamentComplete && g.finish_position === 1 && !missed && g.current_round >= 4;
             const displayScore = missed && g.total_score !== null
               ? g.total_score + 8
               : g.total_score;

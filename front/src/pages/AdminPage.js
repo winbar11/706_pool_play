@@ -19,6 +19,7 @@ export default function AdminPage() {
 
   const isLocked = lbData?.settings?.teams_locked === "1";
   const currentRound = lbData?.settings?.current_round || "0";
+  const isTournamentComplete = lbData?.settings?.tournament_complete === "1";
 
   const notify = (m) => { setMsg(m); setErr(""); setTimeout(() => setMsg(""), 4000); };
   const fail = (e) => { setErr(e); setMsg(""); };
@@ -41,6 +42,14 @@ export default function AdminPage() {
   const roundMut = useMutation({
     mutationFn: (n) => api.admin.setRound(n),
     onSuccess: (_, n) => { qc.invalidateQueries(["leaderboard"]); notify(`Round set to ${n}.`); },
+    onError: (e) => fail(e.message),
+  });
+  const tournamentCompleteMut = useMutation({
+    mutationFn: (complete) => api.admin.setTournamentComplete(complete),
+    onSuccess: (_, complete) => {
+      qc.invalidateQueries(["leaderboard"]);
+      notify(complete ? "Tournament marked complete. Winner bonus applied." : "Tournament marked in-progress. Winner bonus removed.");
+    },
     onError: (e) => fail(e.message),
   });
   const clearTeamsMut = useMutation({
@@ -121,6 +130,20 @@ export default function AdminPage() {
               disabled={refreshMut.isPending}>
               {refreshMut.isPending ? "Refreshing…" : "⟳ Trigger Score Refresh Now"}
             </button>
+
+            {isTournamentComplete ? (
+              <button className="btn btn-secondary"
+                onClick={() => tournamentCompleteMut.mutate(false)}
+                disabled={tournamentCompleteMut.isPending}>
+                ⏸ Mark In-Progress (remove winner bonus)
+              </button>
+            ) : (
+              <button className="btn btn-primary"
+                onClick={() => tournamentCompleteMut.mutate(true)}
+                disabled={tournamentCompleteMut.isPending}>
+                🏆 Mark Tournament Complete (apply winner bonus)
+              </button>
+            )}
 
             <button
               className="btn btn-danger"

@@ -145,7 +145,11 @@ async def refresh_scores():
             team_dict["golfers"] = [dict(g) for g in cur.fetchall()]
             all_teams.append(team_dict)
 
-        scores = calc_all_team_scores(all_teams)
+        cur.execute("SELECT value FROM tournament_settings WHERE key='tournament_complete'")
+        tc_row = cur.fetchone()
+        tournament_complete = tc_row is not None and tc_row["value"] == "1"
+
+        scores = calc_all_team_scores(all_teams, tournament_complete)
 
         for team_id, result in scores.items():
             logger.info(

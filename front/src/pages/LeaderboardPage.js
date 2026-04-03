@@ -75,6 +75,7 @@ export default function LeaderboardPage() {
   const { teams = [], settings = {} } = data;
   const currentRound = parseInt(settings.current_round) || 0;
   const isLocked = settings.teams_locked === "1";
+  const isTournamentComplete = settings.tournament_complete === "1";
 
   const toggleExpand = (id) => setExpanded(exp => exp === id ? null : id);
 
@@ -199,7 +200,9 @@ export default function LeaderboardPage() {
                                         ? fmtScore(displayScore)
                                         : "—"}
                                       {g.finish_position > 0 && !missed &&
-                                        ` · ${g.finish_position === 1 ? "🏆 Winner" : `T${g.finish_position}`}`
+                                        ` · ${g.finish_position === 1
+                                          ? (isTournamentComplete ? "🏆 Winner" : "Leader")
+                                          : `T${g.finish_position}`}`
                                       }
                                     </div>
                                     <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "2px" }}>

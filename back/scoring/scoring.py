@@ -79,8 +79,11 @@ def calc_solo_leader_bonuses(all_teams: list) -> dict:
     return bonuses
 
 
-def calc_winner_bonuses(all_teams: list) -> dict:
+def calc_winner_bonuses(all_teams: list, tournament_complete: bool = False) -> dict:
     bonuses = {team["id"]: 0 for team in all_teams}
+
+    if not tournament_complete:
+        return bonuses
 
     for team in all_teams:
         for g in team.get("golfers", []):
@@ -93,10 +96,10 @@ def calc_winner_bonuses(all_teams: list) -> dict:
     return bonuses
 
 
-def calc_all_team_scores(all_teams: list) -> dict:
+def calc_all_team_scores(all_teams: list, tournament_complete: bool = False) -> dict:
     best_round  = calc_best_round_bonuses(all_teams)
     solo_leader = calc_solo_leader_bonuses(all_teams)
-    winner      = calc_winner_bonuses(all_teams)
+    winner      = calc_winner_bonuses(all_teams, tournament_complete)
 
     results = {}
     for team in all_teams:

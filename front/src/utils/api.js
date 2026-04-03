@@ -49,6 +49,8 @@ const api = {
       request("/api/admin/update-golfer", { method: "POST", body: JSON.stringify(body) }),
     setRound:     (n) => request(`/api/admin/set-round?round_num=${n}`, { method: "POST" }),
     deleteTeams: (team_ids) => request("/api/admin/delete-teams", { method: "POST", body: JSON.stringify({ team_ids }) }),
+    setTournamentComplete: (complete) =>
+      request(`/api/admin/set-tournament-complete?complete=${complete}`, { method: "POST" }),
     clearTeams: () => request("/api/admin/clear-teams", { method: "POST" }),
     clearScores: () => request("/api/admin/clear-scores", { method: "POST" }),
   },
