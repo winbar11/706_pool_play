@@ -43,6 +43,11 @@ export default function Layout() {
       <main className="main-content">
         <Outlet />
       </main>
+
+      <footer className="site-footer">
+        <img src={logo} alt="706 Masters Pool" height="32" style={{ objectFit: "contain", opacity: 0.6 }} />
+        <span className="footer-text">706 Masters Pool · 2026</span>
+      </footer>
     </div>
   );
 }

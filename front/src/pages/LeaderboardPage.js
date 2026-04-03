@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../utils/api.js";
 import { useAuth } from "../context/AuthContext.js";
+import logo from "../static/706_pool_logo.svg";
 
 function fmtScore(score) {
   if (score === null || score === undefined) return "—";
@@ -60,15 +61,18 @@ export default function LeaderboardPage() {
   return (
     <div>
       <div className="tournament-banner">
-        <div>
-          <div className="banner-title">706 Masters Pool</div>
-          <div className="banner-sub">
-            Valero Texas Open · TPC San Antonio · Apr 3–6, 2026
-            {isLocked && (
-              <span className="badge badge-gold" style={{ marginLeft: "0.75rem" }}>
-                🔒 Teams Locked
-              </span>
-            )}
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <img src={logo} alt="706 Masters Pool" height="52" style={{ objectFit: "contain" }} />
+          <div>
+            <div className="banner-title">706 Masters Pool</div>
+            <div className="banner-sub">
+              Valero Texas Open · TPC San Antonio · Apr 3–6, 2026
+              {isLocked && (
+                <span className="badge badge-gold" style={{ marginLeft: "0.75rem" }}>
+                  🔒 Teams Locked
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <RoundPills current={currentRound} />

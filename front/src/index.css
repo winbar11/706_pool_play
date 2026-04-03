@@ -347,6 +347,21 @@ body {
   padding: 2rem 1.5rem;
 }
 
+.site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-top: 1px solid var(--cream-dark);
+  margin-top: auto;
+}
+
+.footer-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
 /* ── Page headers ── */
 .page-header {
   margin-bottom: 2rem;
