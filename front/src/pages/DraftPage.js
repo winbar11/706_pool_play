@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api } from "../utils/api";
@@ -28,13 +28,14 @@ export default function DraftPage() {
   const { data: myTeamData } = useQuery({
     queryKey: ["my-team"],
     queryFn: api.teams.my,
-    onSuccess: (d) => {
-      if (d.team) {
-        setTeamName(d.team.team_name);
-        setSelected(d.team.golfers);
-      }
-    },
   });
+
+  useEffect(() => {
+    if (myTeamData?.team && selected.length === 0) {
+      setTeamName(myTeamData.team.team_name);
+      setSelected(myTeamData.team.golfers);
+    }
+  }, [myTeamData]);
 
   const isLocked = lbData?.settings?.teams_locked === "1";
 
