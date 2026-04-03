@@ -209,12 +209,12 @@ export default function LeaderboardPage() {
                                           : null)
                                         .filter(Boolean)
                                         .join(" · ")}
-                                      {currentRound > 0 &&
-                                        g[`round${currentRound}_score`] === null &&
+                                      {g.current_round > 0 &&
+                                        g[`round${g.current_round}_score`] === null &&
                                         g.finish_position !== null && (
                                         <span style={{ color: "var(--green-600)", fontStyle: "italic" }}>
-                                          {[1, 2, 3, 4].some(r => r < currentRound && g[`round${r}_score`] !== null) ? " · " : ""}
-                                          R{currentRound}: In Progress
+                                          {[1, 2, 3, 4].some(r => r < g.current_round && g[`round${r}_score`] !== null) ? " · " : ""}
+                                          R{g.current_round}: In Progress
                                         </span>
                                       )}
                                     </div>
