@@ -12,7 +12,7 @@ export default function RulesPage() {
           The Basics
         </h2>
         <p style={{ marginBottom: "0.5rem" }}>
-          Draft a team of <strong>6 golfers</strong> under the <strong>$50,000 salary cap</strong>.
+          Draft a team of <strong>6 golfers</strong> under or equal to the <strong>$50,000 salary cap</strong>.
           Your team's score is the combined score to par of all 6 golfers.
           <strong> Lowest total wins.</strong>
         </p>
