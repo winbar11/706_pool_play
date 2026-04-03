@@ -69,7 +69,7 @@ export default function LeaderboardPage() {
               Valero Texas Open · TPC San Antonio · Apr 3–6, 2026
               {isLocked && (
                 <span className="badge badge-gold" style={{ marginLeft: "0.75rem" }}>
-                  🔒 Teams Locked
+                  TEAMS LOCKED
                 </span>
               )}
             </div>
