@@ -10,20 +10,18 @@ function fmtScore(score) {
   return score > 0 ? `+${score}` : `${score}`;
 }
 
-function fmtRound(golfers, roundNum, currentRound) {
+function fmtRound(golfers, roundNum) {
   const roundKey = `round${roundNum}_score`;
   let total = 0;
   let hasScore = false;
 
   for (const g of golfers) {
     const s = g[roundKey];
-    if (s !== null && s !== undefined && s >= 60) {
-      // Completed round: convert stroke total to score-to-par
-      total += s - 72;
-      hasScore = true;
-    } else if (roundNum === currentRound && (s === null || s === undefined)) {
-      // Active round, golfer hasn't finished yet — use their live total_score
-      // adjusted for previously completed rounds so we isolate just this round
+    const isActiveRound = roundNum === g.current_round;
+
+    if (isActiveRound) {
+      // Golfer is currently playing this round — always use live total_score
+      // so stale partial stroke counts are ignored
       const prevRoundsPar = [1, 2, 3, 4]
         .filter(r => r < roundNum)
         .reduce((acc, r) => {
@@ -31,6 +29,10 @@ function fmtRound(golfers, roundNum, currentRound) {
           return (rs !== null && rs !== undefined && rs >= 60) ? acc + (rs - 72) : acc;
         }, 0);
       total += (g.total_score ?? 0) - prevRoundsPar;
+      hasScore = true;
+    } else if (s !== null && s !== undefined && s >= 60) {
+      // Completed round: convert stroke total to score-to-par
+      total += s - 72;
       hasScore = true;
     }
   }
@@ -147,10 +149,10 @@ export default function LeaderboardPage() {
                         </div>
                         <div className="owner">@{team.username}</div>
                       </td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, 1, currentRound)}</td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, 2, currentRound)}</td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, 3, currentRound)}</td>
-                      <td className="dk-points-small">{fmtRound(team.golfers, 4, currentRound)}</td>
+                      <td className="dk-points-small">{fmtRound(team.golfers, 1)}</td>
+                      <td className="dk-points-small">{fmtRound(team.golfers, 2)}</td>
+                      <td className="dk-points-small">{fmtRound(team.golfers, 3)}</td>
+                      <td className="dk-points-small">{fmtRound(team.golfers, 4)}</td>
                       <td className="dk-points-small" style={{
                         color: bonusShots < 0 ? "var(--green-600)" : "var(--text-muted)",
                         fontWeight: bonusShots < 0 ? "600" : "400"
