@@ -139,7 +139,7 @@ export default function RulesPage() {
         <ul style={{ paddingLeft: "1.25rem", lineHeight: "2" }}>
           <li>Pick exactly <strong>6 golfers</strong></li>
           <li>Total salary must be <strong>≤ $50,000</strong></li>
-          <li>Higher-rated golfers cost more — budget wisely</li>
+          <li>Higher-rated golfers cost more — budget wise</li>
           <li>Teams are <strong>locked when the tournament begins</strong> — no changes after lock</li>
           <li>One team per account</li>
         </ul>
