@@ -6,6 +6,7 @@ export default function AdminPage() {
   const qc = useQueryClient();
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
+  const [selectedTeamIds, setSelectedTeamIds] = useState([]);
   const [manualForm, setManualForm] = useState({
     golfer_id: "", round_num: "1", birdies: "0", eagles: "0", bogeys: "0",
     doubles: "0", worse: "0", pars: "0", ace: "0", double_eagle: "0",
@@ -45,6 +46,15 @@ export default function AdminPage() {
   const clearTeamsMut = useMutation({
     mutationFn: api.admin.clearTeams,
     onSuccess: () => { qc.invalidateQueries(["leaderboard"]); notify("All teams cleared."); },
+    onError: (e) => fail(e.message),
+  });
+  const deleteTeamsMut = useMutation({
+    mutationFn: (ids) => api.admin.deleteTeams(ids),
+    onSuccess: (_, ids) => {
+      qc.invalidateQueries(["leaderboard"]);
+      setSelectedTeamIds([]);
+      notify(`${ids.length} team(s) deleted.`);
+    },
     onError: (e) => fail(e.message),
   });
   const clearScoresMut = useMutation({
@@ -154,10 +164,30 @@ export default function AdminPage() {
 
         {/* Participants */}
         <div className="card admin-section">
-          <h3>Participants ({users.length})</h3>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+            <h3 style={{ margin: 0 }}>Participants ({users.length})</h3>
+            {selectedTeamIds.length > 0 && (
+              <button
+                className="btn btn-danger btn-sm"
+                disabled={deleteTeamsMut.isPending}
+                onClick={() => {
+                  const names = selectedTeamIds
+                    .map(id => teams.find(t => t.id === id)?.team_name)
+                    .filter(Boolean)
+                    .join(", ");
+                  if (window.confirm(`Delete ${selectedTeamIds.length} team(s)?\n${names}\n\nThis cannot be undone.`)) {
+                    deleteTeamsMut.mutate(selectedTeamIds);
+                  }
+                }}
+              >
+                {deleteTeamsMut.isPending ? "Deleting…" : `🗑️ Delete Selected (${selectedTeamIds.length})`}
+              </button>
+            )}
+          </div>
           <table className="users-table">
             <thead>
               <tr>
+                <th style={{ width: "2rem" }}></th>
                 <th>Username</th>
                 <th>Team</th>
                 <th>Role</th>
@@ -166,8 +196,22 @@ export default function AdminPage() {
             <tbody>
               {users.map(u => {
                 const team = teams.find(t => t.username === u.username);
+                const checked = team ? selectedTeamIds.includes(team.id) : false;
                 return (
-                  <tr key={u.id}>
+                  <tr key={u.id} style={{ opacity: team ? 1 : 0.5 }}>
+                    <td>
+                      {team && (
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() =>
+                            setSelectedTeamIds(prev =>
+                              checked ? prev.filter(id => id !== team.id) : [...prev, team.id]
+                            )
+                          }
+                        />
+                      )}
+                    </td>
                     <td>@{u.username}</td>
                     <td style={{ color: team ? "var(--text-primary)" : "var(--gray-500)" }}>
                       {team ? team.team_name : "—"}

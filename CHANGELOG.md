@@ -6,8 +6,10 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 Added
 [0.0.8] - 2026.04.03
 - fixed leaderboard live calculation for current round
+  - added '_In Progress_' detail if a player is still playing their round
 - updated editing teams functionality
   - don't have to reselect all golfers again
+- added & improved pool play rules page
 - updated README.md with new scoring rules
 
 Added

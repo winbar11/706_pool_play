@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
+from typing import List
 from database.db import get_conn
 from dependencies import get_admin_user
 from scoring.scoring import calc_golfer_score, calc_all_team_scores
@@ -132,6 +133,25 @@ def set_round(round_num: int, authorization: str = Header(None)):
     cur.close()
     conn.close()
     return {"message": f"Current round set to {round_num}"}
+
+class DeleteTeamsRequest(BaseModel):
+    team_ids: List[int]
+
+@router.post("/delete-teams")
+def delete_teams(req: DeleteTeamsRequest, authorization: str = Header(None)):
+    get_admin_user(authorization=authorization)
+    if not req.team_ids:
+        raise HTTPException(400, "No team IDs provided")
+    conn = get_conn()
+    cur = conn.cursor()
+    placeholders = ",".join(["%s"] * len(req.team_ids))
+    cur.execute(f"DELETE FROM team_golfers WHERE team_id IN ({placeholders})", req.team_ids)
+    cur.execute(f"DELETE FROM teams WHERE id IN ({placeholders})", req.team_ids)
+    deleted = cur.rowcount
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {"message": f"{deleted} team(s) deleted successfully", "deleted_count": deleted}
 
 @router.post("/clear-teams")
 def clear_teams(authorization: str = Header(None)):
