@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
 Added
+[0.0.8] - 2026.04.03
+- fixed leaderboard live calculation for current round
+- updated README.md with new scoring rules
+
+Added
 [0.0.7] - 2026.04.02
 - added rules page
 
