@@ -87,7 +87,7 @@ export default function LeaderboardPage() {
           <div>
             <div className="banner-title">706 Masters Pool</div>
             <div className="banner-sub">
-              Valero Texas Open · TPC San Antonio · Apr 3–6, 2026
+              The Masters · Augusta National Golf Club · Apr 9–12, 2026
               {isLocked && (
                 <span className="badge badge-gold" style={{ marginLeft: "0.75rem" }}>
                   TEAMS LOCKED
@@ -102,7 +102,7 @@ export default function LeaderboardPage() {
       <div className="page-header">
         <h1>Pool Leaderboard</h1>
         <p>
-          {teams.length} {teams.length === 1 ? "entry" : "entries"} · Lowest score wins · Updated end-of-round
+          {teams.length} {teams.length === 1 ? "entry" : "entries"} · Lowest score wins · Scores are updated every 90min from 8am-8pm EST
         </p>
       </div>
 
