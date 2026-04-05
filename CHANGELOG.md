@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
 Added
+[0.0.9] - 2026.04.04
+- added more detial to leaderboard page
+- adjusted missed cut & withdrawal penalties from +8 --> +5
+- added Masters player field with new DFS prices
+
+Added
 [0.0.8] - 2026.04.03
 - fixed leaderboard live calculation for current round
   - added '_In Progress_' detail if a player is still playing their round
