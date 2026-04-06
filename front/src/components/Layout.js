@@ -14,6 +14,9 @@ export default function Layout() {
 
         <div className="navbar-nav">
           <NavLink to="/" end className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
+            Home
+          </NavLink>
+          <NavLink to="/leaderboard" className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
             Leaderboard
           </NavLink>
           <NavLink to="/draft" className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
@@ -24,9 +27,6 @@ export default function Layout() {
           </NavLink>
           <NavLink to="/rules" className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
             Rules
-          </NavLink>
-          <NavLink to="/welcome" className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>
-            How to Enter
           </NavLink>
           {user?.is_admin && (
             <NavLink to="/admin" className={({ isActive }) => "nav-link" + (isActive ? " active" : "")}>

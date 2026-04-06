@@ -34,15 +34,15 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/welcome"  element={<WelcomePage />} />
+            <Route path="/welcome"  element={<Navigate to="/" />} />
             <Route path="/login"    element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
-              <Route index element={<LeaderboardPage />} />
+              <Route index element={<WelcomePage />} />
+              <Route path="leaderboard" element={<LeaderboardPage />} />
               <Route path="draft"   element={<DraftPage />} />
               <Route path="my-team" element={<MyTeamPage />} />
               <Route path="rules"   element={<RulesPage />} />
-              <Route path="welcome" element={<WelcomePage />} />
               <Route path="admin"   element={<AdminRoute><AdminPage /></AdminRoute>} />
             </Route>
           </Routes>

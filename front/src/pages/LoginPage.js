@@ -60,7 +60,7 @@ export default function LoginPage() {
         </p>
         <p className="text-center" style={{ fontSize: "0.8rem", color: "var(--green-400)", marginTop: "0.5rem" }}>
           New to the pool?{" "}
-          <Link to="/welcome" style={{ color: "var(--green-300)", textDecoration: "none" }}>
+          <Link to="/register" style={{ color: "var(--green-300)", textDecoration: "none" }}>
             See how to enter &rarr;
           </Link>
         </p>
