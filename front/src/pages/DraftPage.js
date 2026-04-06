@@ -42,8 +42,8 @@ export default function DraftPage() {
   const mutation = useMutation({
     mutationFn: () => api.teams.submit(teamName, selected.map(g => g.id)),
     onSuccess: () => {
-      qc.invalidateQueries(["my-team"]);
-      qc.invalidateQueries(["leaderboard"]);
+      qc.invalidateQueries({ queryKey: ["my-team"] });
+      qc.invalidateQueries({ queryKey: ["leaderboard"] });
       setSuccess("Team saved! Head to the leaderboard to track your score.");
     },
     onError: (err) => setError(err.message),
