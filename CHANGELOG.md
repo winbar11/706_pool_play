@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
 Added
+[0.0.10] - 2026.04.06
+- added landing page
+
+Added
 [0.0.9] - 2026.04.05
 - added more detial to leaderboard page
 - adjusted missed cut & withdrawal penalties from +8 --> +5

@@ -9,6 +9,7 @@ import DraftPage from "./pages/DraftPage.js";
 import MyTeamPage from "./pages/MyTeamPage.js";
 import AdminPage from "./pages/AdminPage.js";
 import RulesPage from "./pages/RulesPage.js";
+import WelcomePage from "./pages/WelcomePage.js";
 import "./index.css";
 
 const qc = new QueryClient({ defaultOptions: { queries: { staleTime: 60_000 } } });
@@ -33,6 +34,7 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/welcome"  element={<WelcomePage />} />
             <Route path="/login"    element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
