@@ -7,16 +7,12 @@ export default function WelcomePage() {
 
   return (
     <div>
-      {/* Show logo/hero only outside the main layout (unauthenticated view) */}
-      {!user && (
-        <div style={{ textAlign: "center", padding: "2rem 1rem 0.5rem" }}>
-          <img src={logo} alt="706 Masters Pool" height="130" style={{ objectFit: "contain" }} />
+<div className="page-header" style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <img src={logo} alt="706 Masters Pool" height="64" style={{ objectFit: "contain", flexShrink: 0 }} />
+        <div>
+          <h1>How to Enter</h1>
+          <p>Masters Tournament &mdash; April 9–12, 2026</p>
         </div>
-      )}
-
-      <div className="page-header">
-        <h1>How to Enter</h1>
-        <p>Masters Tournament &mdash; April 9–12, 2026</p>
       </div>
 
       {/* ── Payment ── */}
