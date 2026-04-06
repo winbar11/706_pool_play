@@ -1,9 +1,36 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { api } from "../utils/api.js";
 import logo from "../static/706_pool_logo.svg";
 
 export default function WelcomePage() {
   const { user } = useAuth() ?? {};
+  const [pot, setPot] = useState(null);
+  const [potInput, setPotInput] = useState("");
+  const [potEditing, setPotEditing] = useState(false);
+  const [potSaving, setPotSaving] = useState(false);
+
+  useEffect(() => {
+    api.settings.get().then(s => {
+      const val = parseInt(s.pot_amount, 10) || 0;
+      setPot(val);
+      setPotInput(String(val));
+    }).catch(() => {});
+  }, []);
+
+  async function savePot() {
+    const amount = parseInt(potInput, 10);
+    if (isNaN(amount) || amount < 0) return;
+    setPotSaving(true);
+    try {
+      await api.admin.setPot(amount);
+      setPot(amount);
+      setPotEditing(false);
+    } finally {
+      setPotSaving(false);
+    }
+  }
 
   return (
     <div>
@@ -13,6 +40,44 @@ export default function WelcomePage() {
           <h1>How to Enter</h1>
           <p>Masters Tournament &mdash; April 9–12, 2026</p>
         </div>
+      </div>
+
+      {/* ── Pot ── */}
+      <div className="card" style={{ marginBottom: "1.5rem" }}>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "0.75rem" }}>
+          Current Pot
+        </h2>
+        {pot === null ? (
+          <p style={{ color: "var(--text-muted)" }}>Loading…</p>
+        ) : potEditing && user?.is_admin ? (
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            <span style={{ fontWeight: 600 }}>$</span>
+            <input
+              type="number"
+              min="0"
+              value={potInput}
+              onChange={e => setPotInput(e.target.value)}
+              style={{ width: "8rem", padding: "0.35rem 0.5rem", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text-primary)", fontSize: "1rem" }}
+            />
+            <button className="btn btn-primary" style={{ padding: "0.35rem 0.9rem" }} onClick={savePot} disabled={potSaving}>
+              {potSaving ? "Saving…" : "Save"}
+            </button>
+            <button className="btn btn-secondary" style={{ padding: "0.35rem 0.9rem" }} onClick={() => { setPotEditing(false); setPotInput(String(pot)); }}>
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <span style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--green-400)" }}>
+              ${pot.toLocaleString()}
+            </span>
+            {user?.is_admin && (
+              <button className="btn btn-secondary" style={{ padding: "0.25rem 0.75rem", fontSize: "0.8rem" }} onClick={() => setPotEditing(true)}>
+                Edit
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Payment ── */}
@@ -28,6 +93,17 @@ export default function WelcomePage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <PaymentRow platform="Venmo"  handle="@windell_11"   color="#008CFF" icon="V" />
           <PaymentRow platform="PayPal" handle="@JamesWindell" color="#003087" icon="P" />
+        </div>
+      </div>
+
+      {/* ── Payouts ── */}
+      <div className="card" style={{ marginBottom: "1.5rem" }}>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "0.75rem" }}>
+          Payouts
+        </h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <InfoRow icon="1" label="1st Place" value="90% of the pot" highlight />
+          <InfoRow icon="2" label="2nd Place" value="10% of the pot" />
         </div>
       </div>
 

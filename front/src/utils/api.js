@@ -40,6 +40,12 @@ const api = {
   leaderboard: {
     get: () => request("/api/leaderboard"),
   },
+  settings: {
+    get: () => request("/api/settings"),
+  },
+  settings: {
+    get: () => request("/api/settings"),
+  },
   admin: {
     lockTeams:    () => request("/api/admin/lock-teams", { method: "POST" }),
     unlockTeams:  () => request("/api/admin/unlock-teams", { method: "POST" }),
@@ -54,6 +60,7 @@ const api = {
     clearTeams: () => request("/api/admin/clear-teams", { method: "POST" }),
     clearScores: () => request("/api/admin/clear-scores", { method: "POST" }),
     resetGolfers: () => request("/api/admin/reset-golfers", { method: "POST" }),
+    setPot: (amount) => request(`/api/admin/set-pot?amount=${amount}`, { method: "POST" }),
   },
 };
 

@@ -6,6 +6,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 Update
 [0.0.11] - 2026.04.06
 - changed back missed cut/wd penalty back to +8
+- added pot of gold UI & db persistence
 
 Added
 [0.0.10] - 2026.04.06

@@ -6,7 +6,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import asyncio
 import logging
 
-from database.db import init_db
+from database.db import init_db, get_conn
 from routers import auth, teams, leaderboard, admin, golfers
 from scheduler.scheduler import refresh_scores
 
@@ -54,3 +54,13 @@ app.include_router(golfers.router, prefix="/api/golfers", tags=["golfers"])
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/api/settings")
+def get_settings():
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT key, value FROM tournament_settings")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return {row["key"]: row["value"] for row in rows}

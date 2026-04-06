@@ -198,6 +198,17 @@ def reset_golfers(authorization: str = Header(None)):
     _seed_golfers()
     return {"message": "Golfer field reset and re-seeded. All teams cleared."}
 
+@router.post("/set-pot")
+def set_pot(amount: int, authorization: str = Header(None)):
+    get_admin_user(authorization=authorization)
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("UPDATE tournament_settings SET value=%s WHERE key='pot_amount'", (str(amount),))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {"message": f"Pot amount set to ${amount}"}
+
 @router.post("/clear-scores")
 def clear_scores(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
