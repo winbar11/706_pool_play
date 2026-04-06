@@ -21,7 +21,7 @@ export default function WelcomePage() {
           Pay Your Entry Fee
         </h2>
         <p style={{ marginBottom: "1rem", lineHeight: "1.7" }}>
-          Send your entry fee via Venmo or PayPal before drafting. Include your{" "}
+          Entry fee is <strong>$10</strong>. Send via Venmo or PayPal before drafting. Include your{" "}
           <strong>username</strong> in the payment note so we can confirm your entry.
         </p>
 
