@@ -118,7 +118,7 @@ export default function MyTeamPage() {
                                   g.solo_leader_r3 || g.solo_leader_r4);
             const isWinner     = isTournamentComplete && g.finish_position === 1 && !missed && g.current_round >= 4;
             const displayScore = missed && g.total_score !== null
-              ? g.total_score + 8
+              ? g.total_score + 5
               : g.total_score;
 
             return (
@@ -126,7 +126,7 @@ export default function MyTeamPage() {
                 <div>
                   <div className="my-golfer-name">
                     {g.name}
-                    {missed && <span className="cut-badge">MISSED CUT +8</span>}
+                    {missed && <span className="cut-badge">MISSED CUT +5</span>}
                     {isLeader && (
                       <span className="badge badge-gold" style={{ marginLeft: "0.4rem" }}>
                         ★ Round Leader
@@ -175,7 +175,7 @@ export default function MyTeamPage() {
         lineHeight: "1.8"
       }}>
         <strong style={{ color: "var(--text-primary)" }}>Scoring rules</strong><br />
-        Lowest cumulative score wins · Missed cut / WD = score + 8 penalty<br />
+        Lowest cumulative score wins · Missed cut / WD = score + 5 penalty<br />
         Best unique round of day = −1 shot · Solo round leader = −1 shot · Pick the winner = −5 shots
       </div>
     </div>

@@ -43,7 +43,7 @@ export default function RulesPage() {
             Raw Score = sum of all 6 golfers' scores to par
           </div>
           <div style={{ paddingLeft: "2rem", color: "var(--green-200)", fontSize: "0.85rem" }}>
-            (missed cut / WD / DQ golfers: their score + 8 penalty)
+            (missed cut / WD / DQ golfers: their score + 5 penalty)
           </div>
           <div style={{ paddingLeft: "1rem", color: "var(--green-200)" }}>
             Bonus Shots = best-round + solo-leader + winner bonuses
@@ -115,13 +115,13 @@ export default function RulesPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <PenaltyRow
             label="Missed Cut / DQ"
-            value="+8 shots"
-            description="Golfer's 2-round score to par plus an 8-shot penalty is added to your raw score."
+            value="+5 shots"
+            description="Golfer's 2-round score to par plus a 5-shot penalty is added to your raw score."
           />
           <PenaltyRow
             label="Late Withdrawal (never played)"
-            value="+8 shots"
-            description="If a golfer withdraws before playing any hole, a flat +8 penalty is applied."
+            value="+5 shots"
+            description="If a golfer withdraws before playing any hole, a flat +5 penalty is applied."
           />
         </div>
 
@@ -170,7 +170,7 @@ export default function RulesPage() {
           <tbody>
             {[
               { event: "Golfer score (made cut)", adj: "Score to par", cond: "All 4 rounds played", positive: false },
-              { event: "Missed cut / WD / DQ", adj: "+8 penalty", cond: "Added to their 2-round score", positive: true },
+              { event: "Missed cut / WD / DQ", adj: "+5 penalty", cond: "Added to their 2-round score", positive: true },
               { event: "Best round of day", adj: "−1 shot", cond: "Unique lowest round in field", positive: false },
               { event: "Solo leader after round", adj: "−1 shot", cond: "Per round (R1, R2, R3)", positive: false },
               { event: "Tournament winner", adj: "−5 shots", cond: "Golfer wins outright", positive: false },

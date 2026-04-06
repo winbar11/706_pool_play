@@ -188,7 +188,7 @@ export default function LeaderboardPage() {
                                   <div>
                                     <div className="chip-name">
                                       {g.name}
-                                      {missed && <span className="cut-badge">CUT +8</span>}
+                                      {missed && <span className="cut-badge">CUT +5</span>}
                                       {isLeader && (
                                         <span className="badge badge-gold" style={{ marginLeft: "0.3rem", fontSize: "0.62rem" }}>
                                           ★ Leader
@@ -251,7 +251,7 @@ export default function LeaderboardPage() {
       )}
 
       <p className="text-muted mt-2" style={{ fontSize: "0.78rem", textAlign: "center" }}>
-        Click any row to expand · Lowest score wins · Missed cut = score + 8 penalty ·
+        Click any row to expand · Lowest score wins · Missed cut = score + 5 penalty ·
         Best unique round = −1 · Solo round leader = −1 · Pick the winner = −5
       </p>
     </div>
