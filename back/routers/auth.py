@@ -10,6 +10,7 @@ class RegisterRequest(BaseModel):
     username: str
     email: str
     password: str
+    phone: str = None
 
 class LoginRequest(BaseModel):
     username: str
@@ -42,8 +43,8 @@ def register(req: RegisterRequest):
     is_admin = 1 if count == 0 else 0
 
     cur.execute(
-        "INSERT INTO users (username, email, password_hash, is_admin) VALUES (%s,%s,%s,%s) RETURNING id",
-        (req.username.lower(), req.email.lower(), pw_hash, is_admin)
+        "INSERT INTO users (username, email, password_hash, is_admin, phone) VALUES (%s,%s,%s,%s,%s) RETURNING id",
+        (req.username.lower(), req.email.lower(), pw_hash, is_admin, req.phone)
     )
     user_id = cur.fetchone()["id"]
     conn.commit()

@@ -213,6 +213,7 @@ export default function AdminPage() {
                 <th style={{ width: "2rem" }}></th>
                 <th>Username</th>
                 <th>Team</th>
+                <th>Phone</th>
                 <th>Role</th>
               </tr>
             </thead>
@@ -238,6 +239,9 @@ export default function AdminPage() {
                     <td>@{u.username}</td>
                     <td style={{ color: team ? "var(--text-primary)" : "var(--gray-500)" }}>
                       {team ? team.team_name : "—"}
+                    </td>
+                    <td style={{ color: u.phone ? "var(--text-primary)" : "var(--gray-500)", fontSize: "0.85rem" }}>
+                      {u.phone || "—"}
                     </td>
                     <td>
                       {u.is_admin

@@ -6,7 +6,7 @@ import logo from "../static/706_pool_logo.svg";
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ username: "", email: "", phone: "", password: "", confirm: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +21,7 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      await register(form.username, form.email, form.password);
+      await register(form.username, form.email, form.password, form.phone || null);
       navigate("/draft");
     } catch (err) {
       setError(err.message);
@@ -50,6 +50,11 @@ export default function RegisterPage() {
             <label>Email</label>
             <input name="email" type="email" value={form.email} onChange={handle}
               placeholder="you@example.com" required />
+          </div>
+          <div className="form-group">
+            <label>Phone number <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(for payment tracking)</span></label>
+            <input name="phone" type="tel" value={form.phone} onChange={handle}
+              placeholder="(555) 555-5555" />
           </div>
           <div className="form-group">
             <label>Password</label>

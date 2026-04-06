@@ -20,8 +20,8 @@ const api = {
   post: (path, body) => request(path, { method: "POST", body: JSON.stringify(body) }),
 
   auth: {
-    register: (u, e, p) => request("/api/auth/register", {
-      method: "POST", body: JSON.stringify({ username: u, email: e, password: p })
+    register: (u, e, p, phone) => request("/api/auth/register", {
+      method: "POST", body: JSON.stringify({ username: u, email: e, password: p, phone })
     }),
     login: (u, p) => request("/api/auth/login", {
       method: "POST", body: JSON.stringify({ username: u, password: p })

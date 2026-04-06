@@ -120,7 +120,7 @@ def list_users(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT id, username, email, is_admin, created_at FROM users ORDER BY created_at")
+    cur.execute("SELECT id, username, email, phone, is_admin, created_at FROM users ORDER BY created_at")
     users = cur.fetchall()
     cur.close()
     conn.close()
