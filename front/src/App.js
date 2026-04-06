@@ -42,6 +42,7 @@ export default function App() {
               <Route path="draft"   element={<DraftPage />} />
               <Route path="my-team" element={<MyTeamPage />} />
               <Route path="rules"   element={<RulesPage />} />
+              <Route path="welcome" element={<WelcomePage />} />
               <Route path="admin"   element={<AdminRoute><AdminPage /></AdminRoute>} />
             </Route>
           </Routes>

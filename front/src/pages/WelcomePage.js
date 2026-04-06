@@ -1,136 +1,97 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import logo from "../static/706_pool_logo.svg";
 
 export default function WelcomePage() {
+  const { user } = useAuth() ?? {};
+
   return (
-    <div className="auth-page" style={{ alignItems: "flex-start", padding: "2rem 1rem" }}>
-      <div style={{
-        width: "100%",
-        maxWidth: "620px",
-        margin: "0 auto",
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.25rem",
-      }}>
-
-        {/* ── Logo & Hero ── */}
-        <div style={{ textAlign: "center", paddingTop: "1rem" }}>
-          <img src={logo} alt="706 Masters Pool" height="140" style={{ objectFit: "contain" }} />
-          <h1 style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "1.75rem",
-            color: "var(--cream)",
-            marginTop: "0.75rem",
-            marginBottom: "0.25rem",
-          }}>
-            Welcome to the 706 Pool
-          </h1>
-          <p style={{ color: "var(--green-300)", fontSize: "0.95rem" }}>
-            Masters Tournament &mdash; April 9–12, 2026
-          </p>
+    <div>
+      {/* Show logo/hero only outside the main layout (unauthenticated view) */}
+      {!user && (
+        <div style={{ textAlign: "center", padding: "2rem 1rem 0.5rem" }}>
+          <img src={logo} alt="706 Masters Pool" height="130" style={{ objectFit: "contain" }} />
         </div>
+      )}
 
-        {/* ── How to Enter ── */}
-        <div className="auth-card" style={{ padding: "1.5rem" }}>
-          <h2 style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "1.2rem",
-            marginBottom: "1rem",
-            color: "var(--green-800)",
-          }}>
-            How to Enter
-          </h2>
-
-          <p style={{ marginBottom: "1rem", lineHeight: "1.7" }}>
-            Pay your entry fee, then create an account and draft your team of{" "}
-            <strong>6 golfers</strong> before the tournament locks on{" "}
-            <strong>Thursday, April 9 at 8:00 AM ET</strong>.
-          </p>
-
-          {/* Payment options */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1rem" }}>
-            <PaymentRow
-              platform="Venmo"
-              handle="@windell_11"
-              color="#008CFF"
-              icon="V"
-            />
-            <PaymentRow
-              platform="PayPal"
-              handle="@JamesWindell"
-              color="#003087"
-              icon="P"
-            />
-          </div>
-
-          <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: "1.6" }}>
-            Include your username in the payment note so we can confirm your entry.
-          </p>
-        </div>
-
-        {/* ── Team Rules ── */}
-        <div className="auth-card" style={{ padding: "1.5rem" }}>
-          <h2 style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "1.2rem",
-            marginBottom: "1rem",
-            color: "var(--green-800)",
-          }}>
-            Team Rules
-          </h2>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-            <InfoRow icon="6" label="Golfers per team" value="Exactly 6 golfers" highlight />
-            <InfoRow icon="$" label="Salary cap" value="$50,000 total" highlight />
-            <InfoRow icon="1" label="Entries per person" value="One team per account" />
-            <InfoRow icon="🔒" label="Lock time" value="Thursday, April 9 at 8:00 AM ET" />
-          </div>
-        </div>
-
-        {/* ── FYI / Quick Tips ── */}
-        <div className="auth-card" style={{ padding: "1.5rem" }}>
-          <h2 style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "1.2rem",
-            marginBottom: "1rem",
-            color: "var(--green-800)",
-          }}>
-            Good to Know
-          </h2>
-
-          <ul style={{ paddingLeft: "1.25rem", lineHeight: "2.1", margin: 0, color: "var(--text-primary)" }}>
-            <li><strong>Lowest combined score wins</strong> — this is a stroke-play pool, not fantasy points.</li>
-            <li>Higher-rated (more expensive) golfers eat more of your cap — <strong>budget wisely</strong>.</li>
-            <li>
-              Bonuses lower your score: <strong>−1</strong> for best round of the day,{" "}
-              <strong>−1</strong> per round your golfer leads solo, <strong>−5</strong> if your golfer wins.
-            </li>
-            <li>
-              Missed-cut or withdrawn golfers take a <strong>+8 shot penalty</strong> — avoid risky picks.
-            </li>
-            <li>Scores update automatically throughout each round during tournament days.</li>
-            <li>
-              View the full scoring breakdown on the{" "}
-              <Link to="/rules" style={{ color: "var(--green-600)", fontWeight: 600 }}>Rules page</Link>{" "}
-              after you log in.
-            </li>
-          </ul>
-        </div>
-
-        {/* ── CTA Buttons ── */}
-        <div style={{ display: "flex", gap: "0.75rem" }}>
-          <Link to="/register" className="btn btn-primary" style={{ flex: 1, textAlign: "center" }}>
-            Create Account
-          </Link>
-          <Link to="/login" className="btn btn-secondary" style={{ flex: 1, textAlign: "center" }}>
-            Sign In
-          </Link>
-        </div>
-
-        <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--green-400)", paddingBottom: "2rem" }}>
-          Questions? Reach out to <strong style={{ color: "var(--green-300)" }}>@windell_11</strong> on Venmo.
-        </p>
+      <div className="page-header">
+        <h1>How to Enter</h1>
+        <p>Masters Tournament &mdash; April 9–12, 2026</p>
       </div>
+
+      {/* ── Payment ── */}
+      <div className="card" style={{ marginBottom: "1.5rem" }}>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "0.75rem" }}>
+          Pay Your Entry Fee
+        </h2>
+        <p style={{ marginBottom: "1rem", lineHeight: "1.7" }}>
+          Send your entry fee via Venmo or PayPal before drafting. Include your{" "}
+          <strong>username</strong> in the payment note so we can confirm your entry.
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <PaymentRow platform="Venmo"  handle="@windell_11"   color="#008CFF" icon="V" />
+          <PaymentRow platform="PayPal" handle="@JamesWindell" color="#003087" icon="P" />
+        </div>
+      </div>
+
+      {/* ── Team Rules ── */}
+      <div className="card" style={{ marginBottom: "1.5rem" }}>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "1rem" }}>
+          Team Rules
+        </h2>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+          <InfoRow icon="6" label="Golfers per team"  value="Exactly 6 golfers" highlight />
+          <InfoRow icon="$" label="Salary cap"        value="$50,000 total"     highlight />
+          <InfoRow icon="1" label="Entries per person" value="One team per account" />
+          <InfoRow icon="🔒" label="Lock time"        value="Thu Apr 9 · 8:00 AM ET" />
+        </div>
+      </div>
+
+      {/* ── FYI ── */}
+      <div className="card" style={{ marginBottom: "1.5rem" }}>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "1rem" }}>
+          Good to Know
+        </h2>
+
+        <ul style={{ paddingLeft: "1.25rem", lineHeight: "2.1", margin: 0 }}>
+          <li><strong>Lowest combined score wins</strong> — stroke-play pool, not fantasy points.</li>
+          <li>Higher-rated golfers cost more cap space — <strong>budget wisely</strong>.</li>
+          <li>
+            Bonuses lower your score: <strong>−1</strong> for best round of the day,{" "}
+            <strong>−1</strong> per round your golfer leads solo, <strong>−5</strong> if your golfer wins.
+          </li>
+          <li>
+            Missed-cut or withdrawn golfers take a <strong>+8 shot penalty</strong> — risky picks can hurt.
+          </li>
+          <li>Scores refresh automatically throughout each round during tournament days.</li>
+          <li>
+            See the full scoring breakdown on the{" "}
+            {user
+              ? <Link to="/rules" style={{ color: "var(--green-600)", fontWeight: 600 }}>Rules page</Link>
+              : <strong>Rules page</strong>
+            }.
+          </li>
+        </ul>
+      </div>
+
+      {/* ── CTA — only shown when not logged in ── */}
+      {!user && (
+        <>
+          <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1rem" }}>
+            <Link to="/register" className="btn btn-primary" style={{ flex: 1, textAlign: "center" }}>
+              Create Account
+            </Link>
+            <Link to="/login" className="btn btn-secondary" style={{ flex: 1, textAlign: "center" }}>
+              Sign In
+            </Link>
+          </div>
+          <p style={{ textAlign: "center", fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "2rem" }}>
+            Questions? Reach out to <strong>@windell_11</strong> on Venmo.
+          </p>
+        </>
+      )}
     </div>
   );
 }
