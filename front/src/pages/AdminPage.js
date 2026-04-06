@@ -75,6 +75,15 @@ export default function AdminPage() {
     },
     onError: (e) => fail(e.message),
   });
+  const resetGolfersMut = useMutation({
+    mutationFn: api.admin.resetGolfers,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["leaderboard"] });
+      qc.invalidateQueries({ queryKey: ["golfers"] });
+      notify("Golfer field reset. All teams cleared.");
+    },
+    onError: (e) => fail(e.message),
+  });
   const manualMut = useMutation({
     mutationFn: () => api.admin.updateGolfer({
       ...Object.fromEntries(
@@ -167,6 +176,18 @@ export default function AdminPage() {
               disabled={clearTeamsMut.isPending}
             >
               {clearTeamsMut.isPending ? "Clearing…" : "🗑️ Clear All Teams"}
+            </button>
+
+            <button
+              className="btn btn-danger"
+              onClick={() => {
+                if (window.confirm("Reset the golfer field to the current seed data? This will DELETE all teams and golfers. Cannot be undone.")) {
+                  resetGolfersMut.mutate();
+                }
+              }}
+              disabled={resetGolfersMut.isPending}
+            >
+              {resetGolfersMut.isPending ? "Resetting…" : "⛳ Reset Golfer Field"}
             </button>
           </div>
 

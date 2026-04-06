@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from typing import List
-from database.db import get_conn
+from database.db import get_conn, _seed_golfers
 from dependencies import get_admin_user
 from scoring.scoring import calc_golfer_score, calc_all_team_scores
 from scheduler.scheduler import refresh_scores
@@ -182,6 +182,21 @@ def clear_teams(authorization: str = Header(None)):
     cur.close()
     conn.close()
     return {"message": "All teams cleared successfully"}
+
+@router.post("/reset-golfers")
+def reset_golfers(authorization: str = Header(None)):
+    """Wipe the golfer field and all teams, then re-seed from db.py."""
+    get_admin_user(authorization=authorization)
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM team_golfers")
+    cur.execute("DELETE FROM teams")
+    cur.execute("DELETE FROM golfers")
+    conn.commit()
+    cur.close()
+    conn.close()
+    _seed_golfers()
+    return {"message": "Golfer field reset and re-seeded. All teams cleared."}
 
 @router.post("/clear-scores")
 def clear_scores(authorization: str = Header(None)):

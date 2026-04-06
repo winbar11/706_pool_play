@@ -53,6 +53,7 @@ const api = {
       request(`/api/admin/set-tournament-complete?complete=${complete}`, { method: "POST" }),
     clearTeams: () => request("/api/admin/clear-teams", { method: "POST" }),
     clearScores: () => request("/api/admin/clear-scores", { method: "POST" }),
+    resetGolfers: () => request("/api/admin/reset-golfers", { method: "POST" }),
   },
 };
 
