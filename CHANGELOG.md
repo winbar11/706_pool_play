@@ -3,14 +3,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
+Update
+[0.0.11] - 2026.04.06
+- changed back missed cut/wd penalty back to +8
+
 Added
 [0.0.10] - 2026.04.06
-- added landing page
+- added landing page with signup info
+- added back missed cut/wd penalty back to +8
 
 Added
 [0.0.9] - 2026.04.05
 - added more detial to leaderboard page
-- adjusted missed cut & withdrawal penalties from +8 --> +5
 - added Masters player field with new DFS prices
 
 Added

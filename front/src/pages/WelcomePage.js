@@ -59,7 +59,7 @@ export default function WelcomePage() {
             <strong>−1</strong> per round your golfer leads solo, <strong>−5</strong> if your golfer wins.
           </li>
           <li>
-            Missed-cut or withdrawn golfers take a <strong>+5 shot penalty</strong> — risky picks can hurt.
+            Missed-cut or withdrawn golfers take a <strong>+8 shot penalty</strong> — risky picks can hurt.
           </li>
           <li>Scores refresh automatically throughout each round during tournament days.</li>
           <li>

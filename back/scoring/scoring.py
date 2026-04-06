@@ -9,11 +9,11 @@ Bonuses (subtract from team total):
     - Tournament winner picked: -5 shots
 
 Penalties (add to team total):
-    - Missed cut / WD / DQ: actual 2-round score + 5 penalty shots
-    - Late WD (never played): +5 penalty
+    - Missed cut / WD / DQ: actual 2-round score + 8 penalty shots
+    - Late WD (never played): +8 penalty
 """
 
-MISSED_CUT_PENALTY = 5
+MISSED_CUT_PENALTY = 8
 
 def calc_golfer_score(golfer: dict) -> int:
     made_cut      = golfer.get("made_cut", 1)

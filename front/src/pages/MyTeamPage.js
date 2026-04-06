@@ -175,7 +175,7 @@ export default function MyTeamPage() {
         lineHeight: "1.8"
       }}>
         <strong style={{ color: "var(--text-primary)" }}>Scoring rules</strong><br />
-        Lowest cumulative score wins · Missed cut / WD = score + 5 penalty<br />
+        Lowest cumulative score wins · Missed cut / WD = score + 8 penalty<br />
         Best unique round of day = −1 shot · Solo round leader = −1 shot · Pick the winner = −5 shots
       </div>
     </div>

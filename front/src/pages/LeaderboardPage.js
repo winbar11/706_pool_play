@@ -251,7 +251,7 @@ export default function LeaderboardPage() {
       )}
 
       <p className="text-muted mt-2" style={{ fontSize: "0.78rem", textAlign: "center" }}>
-        Click any row to expand · Lowest score wins · Missed cut = score + 5 penalty ·
+        Click any row to expand · Lowest score wins · Missed cut = score + 8 penalty ·
         Best unique round = −1 · Solo round leader = −1 · Pick the winner = −5
       </p>
     </div>
