@@ -79,6 +79,116 @@ export default function LeaderboardPage() {
 
   const toggleExpand = (id) => setExpanded(exp => exp === id ? null : id);
 
+  function TeamRow({ team, rank }) {
+    const isOpen     = expanded === team.id;
+    const rankClass  = rank === 1 ? "rank-1" : rank === 2 ? "rank-2" : rank === 3 ? "rank-3" : "rank-other";
+    const isMe       = team.username === user?.username;
+    const finalScore = team.final_score ?? null;
+    const bonusShots = team.bonus_shots || 0;
+
+    return (
+      <>
+        <tr className={`team-row${isMe ? " team-row-me" : ""}`} onClick={() => toggleExpand(team.id)}>
+          <td><span className={`rank-cell ${rankClass}`}>{rank}</span></td>
+          <td className="team-name-cell">
+            <div className="team-name">
+              {team.team_name}
+              {isMe && <span className="badge badge-gold" style={{ marginLeft: "0.5rem" }}>You</span>}
+            </div>
+            <div className="owner">@{team.username}</div>
+          </td>
+          <td className={`dk-points-small col-round ${currentRound <= 1 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 1)}</td>
+          <td className={`dk-points-small col-round ${currentRound === 2 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 2)}</td>
+          <td className={`dk-points-small col-round ${currentRound === 3 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 3)}</td>
+          <td className={`dk-points-small col-round ${currentRound === 4 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 4)}</td>
+          <td className="dk-points-small" style={{
+            color: bonusShots < 0 ? "var(--green-600)" : "var(--text-muted)",
+            fontWeight: bonusShots < 0 ? "600" : "400"
+          }}>
+            {bonusShots < 0 ? bonusShots : "—"}
+          </td>
+          <td className="dk-points" style={{
+            color: finalScore !== null && finalScore < 0
+              ? "var(--green-600)"
+              : finalScore !== null && finalScore > 0
+              ? "#b91c1c"
+              : "var(--text-muted)"
+          }}>
+            {fmtScore(finalScore)}
+          </td>
+        </tr>
+
+        {isOpen && (
+          <tr className="team-golfers-row">
+            <td colSpan={8}>
+              <div className="golfer-chips">
+                {team.golfers.map(g => {
+                  const missed   = g.made_cut === 0;
+                  const isLeader = !!(g.solo_leader_r1 || g.solo_leader_r2 ||
+                                   g.solo_leader_r3 || g.solo_leader_r4);
+                  const displayScore = missed && g.total_score !== null
+                    ? g.total_score + 8
+                    : g.total_score;
+                  return (
+                    <div key={g.id} className={`golfer-chip ${missed ? "chip-cut" : ""}`}>
+                      <div>
+                        <div className="chip-name">
+                          {g.name}
+                          {missed && <span className="cut-badge">CUT +5</span>}
+                          {isLeader && (
+                            <span className="badge badge-gold" style={{ marginLeft: "0.3rem", fontSize: "0.62rem" }}>
+                              ★ Leader
+                            </span>
+                          )}
+                        </div>
+                        <div className="chip-score">
+                          {displayScore !== null && displayScore !== undefined ? fmtScore(displayScore) : "—"}
+                          {g.finish_position > 0 && !missed &&
+                            ` · ${g.finish_position === 1
+                              ? (isTournamentComplete ? "🏆 Winner" : "Leader")
+                              : `T${g.finish_position}`}`
+                          }
+                        </div>
+                        <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                          {[1, 2, 3, 4]
+                            .map(r => g[`round${r}_score`] !== null && g[`round${r}_score`] !== undefined
+                              ? `R${r}: ${g[`round${r}_score`]}`
+                              : null)
+                            .filter(Boolean)
+                            .join(" · ")}
+                          {g.current_round > 0 &&
+                            g[`round${g.current_round}_score`] === null &&
+                            g.finish_position !== null && (
+                            <span style={{ color: "var(--green-600)", fontStyle: "italic" }}>
+                              {[1, 2, 3, 4].some(r => r < g.current_round && g[`round${r}_score`] !== null) ? " · " : ""}
+                              R{g.current_round}: In Progress
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {bonusShots < 0 && (
+                <div style={{ marginTop: "0.5rem", fontSize: "0.78rem", color: "var(--green-600)", paddingLeft: "0.25rem" }}>
+                  ★ Bonus shots: {bonusShots}
+                  {team.golfers.some(g =>
+                    g.finish_position === 1 && g.made_cut === 1 && g.current_round >= 4
+                  ) && " (includes −5 winner bonus)"}
+                </div>
+              )}
+            </td>
+          </tr>
+        )}
+      </>
+    );
+  }
+
+  const top10      = teams.slice(0, 10);
+  const myRank     = user ? teams.findIndex(t => t.username === user.username) : -1;
+  const myTeam     = myRank >= 10 ? teams[myRank] : null;
+
   return (
     <div>
       <div className="tournament-banner">
@@ -132,123 +242,24 @@ export default function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {teams.map((team, idx) => {
-                const isOpen     = expanded === team.id;
-                const rankClass  = idx === 0 ? "rank-1" : idx === 1 ? "rank-2" : idx === 2 ? "rank-3" : "rank-other";
-                const isMe       = team.username === user?.username;
-                const finalScore = team.final_score ?? null;
-                const bonusShots = team.bonus_shots || 0;
-
-                return (
-                  <>
-                    <tr key={team.id} className="team-row" onClick={() => toggleExpand(team.id)}>
-                      <td>
-                        <span className={`rank-cell ${rankClass}`}>{idx + 1}</span>
-                      </td>
-                      <td className="team-name-cell">
-                        <div className="team-name">
-                          {team.team_name}
-                          {isMe && (
-                            <span className="badge badge-gold" style={{ marginLeft: "0.5rem" }}>You</span>
-                          )}
-                        </div>
-                        <div className="owner">@{team.username}</div>
-                      </td>
-                      <td className={`dk-points-small col-round ${currentRound <= 1 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 1)}</td>
-                      <td className={`dk-points-small col-round ${currentRound === 2 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 2)}</td>
-                      <td className={`dk-points-small col-round ${currentRound === 3 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 3)}</td>
-                      <td className={`dk-points-small col-round ${currentRound === 4 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 4)}</td>
-                      <td className="dk-points-small" style={{
-                        color: bonusShots < 0 ? "var(--green-600)" : "var(--text-muted)",
-                        fontWeight: bonusShots < 0 ? "600" : "400"
-                      }}>
-                        {bonusShots < 0 ? bonusShots : "—"}
-                      </td>
-                      <td className="dk-points" style={{
-                        color: finalScore !== null && finalScore < 0
-                          ? "var(--green-600)"
-                          : finalScore !== null && finalScore > 0
-                          ? "#b91c1c"
-                          : "var(--text-muted)"
-                      }}>
-                        {fmtScore(finalScore)}
-                      </td>
-                    </tr>
-
-                    {isOpen && (
-                      <tr key={`${team.id}-golfers`} className="team-golfers-row">
-                        <td colSpan={8}>
-                          <div className="golfer-chips">
-                            {team.golfers.map(g => {
-                              const missed   = g.made_cut === 0;
-                              const isLeader = !!(g.solo_leader_r1 || g.solo_leader_r2 ||
-                                               g.solo_leader_r3 || g.solo_leader_r4);
-                              const displayScore = missed && g.total_score !== null
-                                ? g.total_score + 8
-                                : g.total_score;
-
-                              return (
-                                <div key={g.id} className={`golfer-chip ${missed ? "chip-cut" : ""}`}>
-                                  <div>
-                                    <div className="chip-name">
-                                      {g.name}
-                                      {missed && <span className="cut-badge">CUT +5</span>}
-                                      {isLeader && (
-                                        <span className="badge badge-gold" style={{ marginLeft: "0.3rem", fontSize: "0.62rem" }}>
-                                          ★ Leader
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="chip-score">
-                                      {displayScore !== null && displayScore !== undefined
-                                        ? fmtScore(displayScore)
-                                        : "—"}
-                                      {g.finish_position > 0 && !missed &&
-                                        ` · ${g.finish_position === 1
-                                          ? (isTournamentComplete ? "🏆 Winner" : "Leader")
-                                          : `T${g.finish_position}`}`
-                                      }
-                                    </div>
-                                    <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "2px" }}>
-                                      {[1, 2, 3, 4]
-                                        .map(r => g[`round${r}_score`] !== null && g[`round${r}_score`] !== undefined
-                                          ? `R${r}: ${g[`round${r}_score`]}`
-                                          : null)
-                                        .filter(Boolean)
-                                        .join(" · ")}
-                                      {g.current_round > 0 &&
-                                        g[`round${g.current_round}_score`] === null &&
-                                        g.finish_position !== null && (
-                                        <span style={{ color: "var(--green-600)", fontStyle: "italic" }}>
-                                          {[1, 2, 3, 4].some(r => r < g.current_round && g[`round${r}_score`] !== null) ? " · " : ""}
-                                          R{g.current_round}: In Progress
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          {bonusShots < 0 && (
-                            <div style={{
-                              marginTop: "0.5rem",
-                              fontSize: "0.78rem",
-                              color: "var(--green-600)",
-                              paddingLeft: "0.25rem"
-                            }}>
-                              ★ Bonus shots: {bonusShots}
-                              {team.golfers.some(g =>
-                                g.finish_position === 1 && g.made_cut === 1 && g.current_round >= 4
-                              ) && " (includes −5 winner bonus)"}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                );
-              })}
+              {top10.map((team, idx) => (
+                <TeamRow key={team.id} team={team} rank={idx + 1} />
+              ))}
+              {myTeam && (
+                <>
+                  <tr className="leaderboard-ellipsis-row">
+                    <td colSpan={8} style={{
+                      textAlign: "center", padding: "0.4rem",
+                      fontSize: "0.75rem", color: "var(--text-muted)",
+                      borderBottom: "1px solid var(--cream-dark)",
+                      letterSpacing: "0.1em"
+                    }}>
+                      · · ·
+                    </td>
+                  </tr>
+                  <TeamRow key={myTeam.id} team={myTeam} rank={myRank + 1} />
+                </>
+              )}
             </tbody>
           </table>
         </div>

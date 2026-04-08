@@ -415,6 +415,8 @@ body {
 }
 .team-row:hover { background: var(--cream); }
 .team-row:last-child { border-bottom: none; }
+.team-row-me { background: rgba(200, 146, 42, 0.06); }
+.team-row-me:hover { background: rgba(200, 146, 42, 0.12); }
 
 .team-row td {
   padding: 0.9rem 1rem;
