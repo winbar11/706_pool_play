@@ -62,6 +62,7 @@ function RoundPills({ current }) {
 export default function LeaderboardPage() {
   const { user } = useAuth();
   const [expanded, setExpanded] = useState(null);
+  const [showAll, setShowAll] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["leaderboard"],
@@ -242,12 +243,12 @@ export default function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {top10.map((team, idx) => (
+              {(showAll ? teams : top10).map((team, idx) => (
                 <TeamRow key={team.id} team={team} rank={idx + 1} />
               ))}
-              {myTeam && (
+              {!showAll && myTeam && (
                 <>
-                  <tr className="leaderboard-ellipsis-row">
+                  <tr>
                     <td colSpan={8} style={{
                       textAlign: "center", padding: "0.4rem",
                       fontSize: "0.75rem", color: "var(--text-muted)",
@@ -262,6 +263,18 @@ export default function LeaderboardPage() {
               )}
             </tbody>
           </table>
+          {teams.length > 10 && (
+            <button
+              onClick={() => setShowAll(s => !s)}
+              style={{
+                display: "block", width: "100%", padding: "0.65rem",
+                background: "none", border: "none", borderTop: "1px solid var(--cream-dark)",
+                cursor: "pointer", fontSize: "0.82rem", color: "var(--text-muted)",
+              }}
+            >
+              {showAll ? "Show top 10 only ▲" : `Show all ${teams.length} entries ▼`}
+            </button>
+          )}
         </div>
       )}
 
