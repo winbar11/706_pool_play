@@ -34,7 +34,7 @@ export default function WelcomePage() {
 
   return (
     <div>
-<div className="page-header" style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+      <div className="page-header" style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
         <img src={logo} alt="706 Masters Pool" height="64" style={{ objectFit: "contain", flexShrink: 0 }} />
         <div>
           <h1>How to Enter</h1>
@@ -42,15 +42,16 @@ export default function WelcomePage() {
         </div>
       </div>
 
-      {/* ── Pot ── */}
+      {/* ── Combined Pot & Payouts Card ── */}
       <div className="card" style={{ marginBottom: "1.5rem" }}>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "0.75rem" }}>
           Current Pot
         </h2>
+        
         {pot === null ? (
           <p style={{ color: "var(--text-muted)" }}>Loading…</p>
         ) : potEditing && user?.is_admin ? (
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "1rem" }}>
             <span style={{ fontWeight: 600 }}>$</span>
             <input
               type="number"
@@ -67,7 +68,7 @@ export default function WelcomePage() {
             </button>
           </div>
         ) : (
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
             <span style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--green-400)" }}>
               ${pot.toLocaleString()}
             </span>
@@ -78,6 +79,17 @@ export default function WelcomePage() {
             )}
           </div>
         )}
+
+        {/* Payouts sub-section */}
+        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.25rem", marginTop: "0.5rem" }}>
+          <h3 style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: "0.75rem", fontWeight: 700 }}>
+            Estimated Payouts
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            <InfoRow icon="1" label="1st Place" value="90% of the pot" highlight />
+            <InfoRow icon="2" label="2nd Place" value="10% of the pot" />
+          </div>
+        </div>
       </div>
 
       {/* ── Payment ── */}
@@ -93,17 +105,6 @@ export default function WelcomePage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <PaymentRow platform="Venmo"  handle="@windell_11"   color="#008CFF" icon="V" />
           <PaymentRow platform="PayPal" handle="@JamesWindell" color="#003087" icon="P" />
-        </div>
-      </div>
-
-      {/* ── Payouts ── */}
-      <div className="card" style={{ marginBottom: "1.5rem" }}>
-        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "0.75rem" }}>
-          Payouts
-        </h2>
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          <InfoRow icon="1" label="1st Place" value="90% of the pot" highlight />
-          <InfoRow icon="2" label="2nd Place" value="10% of the pot" />
         </div>
       </div>
 
@@ -148,7 +149,7 @@ export default function WelcomePage() {
         </ul>
       </div>
 
-      {/* ── CTA — only shown when not logged in ── */}
+      {/* ── CTA ── */}
       {!user && (
         <>
           <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1rem" }}>
@@ -207,28 +208,29 @@ function InfoRow({ icon, label, value, highlight }) {
     <div style={{
       display: "flex",
       alignItems: "center",
-      gap: "0.75rem",
-      padding: "0.625rem 0.875rem",
-      background: highlight ? "var(--gold-50, #fdf8ec)" : "var(--green-50)",
-      borderRadius: "var(--radius-md)",
+      justifyContent: "space-between",
+      padding: "0.5rem 0.75rem",
+      background: highlight ? "var(--green-50)" : "transparent",
+      borderRadius: "6px",
     }}>
-      <div style={{
-        width: "28px",
-        height: "28px",
-        borderRadius: "var(--radius-sm)",
-        background: highlight ? "var(--gold-400, #d4a017)" : "var(--green-200)",
-        color: highlight ? "#3d2800" : "var(--green-700)",
-        fontWeight: 700,
-        fontSize: "0.85rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}>
-        {icon}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+        <span style={{
+          width: "24px",
+          height: "24px",
+          borderRadius: "50%",
+          background: highlight ? "var(--green-600)" : "var(--surface-3)",
+          color: highlight ? "#fff" : "var(--text-muted)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "0.75rem",
+          fontWeight: 700,
+        }}>
+          {icon}
+        </span>
+        <span style={{ fontSize: "0.95rem", color: "var(--text-primary)" }}>{label}</span>
       </div>
-      <div style={{ flex: 1, fontSize: "0.875rem", color: "var(--text-muted)" }}>{label}</div>
-      <div style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--green-800)" }}>{value}</div>
+      <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--text-primary)" }}>{value}</span>
     </div>
   );
 }
