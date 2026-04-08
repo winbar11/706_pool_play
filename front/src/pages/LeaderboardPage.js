@@ -102,13 +102,17 @@ export default function LeaderboardPage() {
       <div className="page-header">
         <h1>Pool Leaderboard</h1>
         <p>
-          {teams.length} {teams.length === 1 ? "entry" : "entries"} · Lowest score wins · Scores are updated every 90min from 8am-8pm EST
+          {teams.length} {teams.length === 1 ? "entry" : "entries"} · Lowest score wins
+          <br />
+          <span style={{ fontSize: "0.8em" }}>
+            Scores refresh Thu–Sun at 8:00, 9:30, 11:00, 12:30, 2:00, 3:30, 5:00, 6:30 &amp; 8:00 PM ET
+          </span>
         </p>
       </div>
 
       {teams.length === 0 ? (
         <div className="card empty-state">
-          <div className="empty-icon">🏌️</div>
+          <img src={logo} alt="706 Masters Pool" height="72" style={{ objectFit: "contain", marginBottom: "0.5rem" }} />
           <h3>No teams yet</h3>
           <p>Be the first to submit your lineup!</p>
         </div>

@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
     # Refresh scores every 90 minutes, 8am–7pm ET on tournament days
     # Runs at: 8:00, 9:30, 11:00, 12:30, 14:00, 15:30, 17:00, 18:30
     scheduler.add_job(refresh_scores, "cron", day_of_week="thu,fri,sat,sun",
-                        hour="8,11,14,17", minute=0, timezone="America/New_York",
+                        hour="8,11,14,17,20", minute=0, timezone="America/New_York",
                         id="score_refresh_on_hour")
     scheduler.add_job(refresh_scores, "cron", day_of_week="thu,fri,sat,sun",
                         hour="9,12,15,18", minute=30, timezone="America/New_York",
