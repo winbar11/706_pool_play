@@ -47,7 +47,7 @@ export default function WelcomePage() {
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "0.75rem" }}>
           Current Pot
         </h2>
-        
+
         {pot === null ? (
           <p style={{ color: "var(--text-muted)" }}>Loading…</p>
         ) : potEditing && user?.is_admin ? (
@@ -58,12 +58,18 @@ export default function WelcomePage() {
               min="0"
               value={potInput}
               onChange={e => setPotInput(e.target.value)}
-              style={{ width: "8rem", padding: "0.35rem 0.5rem", borderRadius: "6px", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text-primary)", fontSize: "1rem" }}
+              style={{
+                width: "8rem", padding: "0.35rem 0.5rem", borderRadius: "6px",
+                border: "1px solid var(--border)", background: "var(--surface-2)",
+                color: "var(--text-primary)", fontSize: "1rem"
+              }}
             />
-            <button className="btn btn-primary" style={{ padding: "0.35rem 0.9rem" }} onClick={savePot} disabled={potSaving}>
+            <button className="btn btn-primary" style={{ padding: "0.35rem 0.9rem" }}
+              onClick={savePot} disabled={potSaving}>
               {potSaving ? "Saving…" : "Save"}
             </button>
-            <button className="btn btn-secondary" style={{ padding: "0.35rem 0.9rem" }} onClick={() => { setPotEditing(false); setPotInput(String(pot)); }}>
+            <button className="btn btn-secondary" style={{ padding: "0.35rem 0.9rem" }}
+              onClick={() => { setPotEditing(false); setPotInput(String(pot)); }}>
               Cancel
             </button>
           </div>
@@ -73,7 +79,9 @@ export default function WelcomePage() {
               ${pot.toLocaleString()}
             </span>
             {user?.is_admin && (
-              <button className="btn btn-secondary" style={{ padding: "0.25rem 0.75rem", fontSize: "0.8rem" }} onClick={() => setPotEditing(true)}>
+              <button className="btn btn-secondary"
+                style={{ padding: "0.25rem 0.75rem", fontSize: "0.8rem" }}
+                onClick={() => setPotEditing(true)}>
                 Edit
               </button>
             )}
@@ -82,12 +90,25 @@ export default function WelcomePage() {
 
         {/* Payouts sub-section */}
         <div style={{ borderTop: "1px solid var(--border)", paddingTop: "1.25rem", marginTop: "0.5rem" }}>
-          <h3 style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: "0.75rem", fontWeight: 700 }}>
+          <h3 style={{
+            fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.05em",
+            color: "var(--text-muted)", marginBottom: "0.75rem", fontWeight: 700
+          }}>
             Estimated Payouts
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            <InfoRow icon="1" label="1st Place" value="90% of the pot" highlight />
-            <InfoRow icon="2" label="2nd Place" value="10% of the pot" />
+            <PayoutRow
+              place="1st"
+              label="1st Place"
+              value={pot ? `$${Math.floor(pot * 0.9).toLocaleString()}` : "90% of pot"}
+              gold
+            />
+            <PayoutRow
+              place="2nd"
+              label="2nd Place"
+              value={pot ? `$${Math.floor(pot * 0.1).toLocaleString()}` : "10% of pot"}
+              silver
+            />
           </div>
         </div>
       </div>
@@ -101,7 +122,6 @@ export default function WelcomePage() {
           Entry fee is <strong>$10</strong>. Send via Venmo or PayPal before drafting. Include your{" "}
           <strong>username</strong> in the payment note so we can confirm your entry.
         </p>
-
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <PaymentRow platform="Venmo"  handle="@windell_11"   color="#008CFF" icon="V" />
           <PaymentRow platform="PayPal" handle="@JamesWindell" color="#003087" icon="P" />
@@ -113,40 +133,34 @@ export default function WelcomePage() {
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "1rem" }}>
           Team Rules
         </h2>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-          <InfoRow icon="6" label="Golfers per team"  value="Exactly 6 golfers" highlight />
-          <InfoRow icon="$" label="Salary cap"        value="$50,000 total"     highlight />
-          <InfoRow icon="1" label="Entries per person" value="One team per account" />
-          <InfoRow icon="🔒" label="Lock time"        value="Thu Apr 9 · 8:00 AM ET" />
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <RuleRow icon="👥" label="Golfers per team"  value="Exactly 6 golfers" />
+          <RuleRow icon="💰" label="Salary cap"        value="$50,000 total" />
+          <RuleRow icon="👤" label="Entries per person" value="One team per account" />
+          <RuleRow icon="🔒" label="Lock time"         value="Thu Apr 9 · 8:00 AM ET" />
         </div>
       </div>
 
-      {/* ── FYI ── */}
+      {/* ── Good to Know ── */}
       <div className="card" style={{ marginBottom: "1.5rem" }}>
         <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", marginBottom: "1rem" }}>
           Good to Know
         </h2>
-
-        <ul style={{ paddingLeft: "1.25rem", lineHeight: "2.1", margin: 0 }}>
-          <li><strong>Lowest combined score wins</strong> — stroke-play pool, not fantasy points.</li>
-          <li>Higher-rated golfers cost more cap space — <strong>budget wisely</strong>.</li>
-          <li>
-            Bonuses lower your score: <strong>−1</strong> for best round of the day,{" "}
-            <strong>−1</strong> per round your golfer leads solo, <strong>−5</strong> if your golfer wins.
-          </li>
-          <li>
-            Missed-cut or withdrawn golfers take a <strong>+8 shot penalty</strong> — risky picks can hurt.
-          </li>
-          <li>Scores refresh automatically throughout each round during tournament days.</li>
-          <li>
-            See the full scoring breakdown on the{" "}
-            {user
-              ? <Link to="/rules" style={{ color: "var(--green-600)", fontWeight: 600 }}>Rules page</Link>
-              : <strong>Rules page</strong>
-            }.
-          </li>
-        </ul>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <RuleRow icon="🏆" label="Lowest combined score wins" value="Stroke play, not fantasy points" />
+          <RuleRow icon="📊" label="Budget wisely" value="Better golfers cost more cap space" />
+          <RuleRow icon="⭐" label="Best round of the day" value="−1 shot bonus (unique only)" />
+          <RuleRow icon="🥇" label="Solo round leader" value="−1 shot per round led" />
+          <RuleRow icon="🎯" label="Pick the winner" value="−5 shot bonus" />
+          <RuleRow icon="✂️" label="Missed cut / WD" value="+8 shot penalty" />
+          <RuleRow icon="🔄" label="Score updates" value="Refreshed throughout each round" />
+        </div>
+        {user && (
+          <p style={{ marginTop: "1rem", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            See full breakdown on the{" "}
+            <Link to="/rules" style={{ color: "var(--green-600)", fontWeight: 600 }}>Rules page →</Link>
+          </p>
+        )}
       </div>
 
       {/* ── CTA ── */}
@@ -169,68 +183,99 @@ export default function WelcomePage() {
   );
 }
 
-function PaymentRow({ platform, handle, color, icon }) {
-  return (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "0.875rem",
-      padding: "0.875rem 1rem",
-      background: "var(--green-50)",
-      borderRadius: "var(--radius-md)",
-      borderLeft: `3px solid ${color}`,
-    }}>
-      <div style={{
-        width: "36px",
-        height: "36px",
-        borderRadius: "50%",
-        background: color,
-        color: "#fff",
-        fontWeight: 700,
-        fontSize: "1rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}>
-        {icon}
-      </div>
-      <div>
-        <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "1px" }}>{platform}</div>
-        <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--green-800)" }}>{handle}</div>
-      </div>
-    </div>
-  );
-}
+function PayoutRow({ place, label, value, gold, silver }) {
+  const bg     = gold   ? "linear-gradient(135deg, #fef9c3 0%, #fef3c7 100%)"
+               : silver ? "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)"
+               : "var(--surface-2)";
+  const border = gold   ? "#f59e0b"
+               : silver ? "#94a3b8"
+               : "var(--border)";
+  const iconBg = gold   ? "linear-gradient(135deg, #f59e0b, #d97706)"
+               : silver ? "linear-gradient(135deg, #94a3b8, #64748b)"
+               : "var(--surface-3)";
+  const iconColor = gold || silver ? "#fff" : "var(--text-muted)";
 
-function InfoRow({ icon, label, value, highlight }) {
   return (
     <div style={{
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      padding: "0.5rem 0.75rem",
-      background: highlight ? "var(--green-50)" : "transparent",
-      borderRadius: "6px",
+      padding: "0.65rem 0.875rem",
+      background: bg,
+      borderRadius: "8px",
+      border: `1px solid ${border}`,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
         <span style={{
-          width: "24px",
-          height: "24px",
-          borderRadius: "50%",
-          background: highlight ? "var(--green-600)" : "var(--surface-3)",
-          color: highlight ? "#fff" : "var(--text-muted)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "0.75rem",
-          fontWeight: 700,
+          width: "28px", height: "28px", borderRadius: "50%",
+          background: iconBg, color: iconColor,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: "0.75rem", fontWeight: 800, flexShrink: 0,
         }}>
-          {icon}
+          {place}
         </span>
-        <span style={{ fontSize: "0.95rem", color: "var(--text-primary)" }}>{label}</span>
+        <span style={{
+          fontSize: "0.95rem",
+          fontWeight: 600,
+          color: gold ? "#92400e" : silver ? "#334155" : "var(--text-primary)"
+        }}>
+          {label}
+        </span>
       </div>
-      <span style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--text-primary)" }}>{value}</span>
+      <span style={{
+        fontWeight: 700, fontSize: "0.95rem",
+        color: gold ? "#b45309" : silver ? "#475569" : "var(--text-primary)"
+      }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function RuleRow({ icon, label, value }) {
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "0.55rem 0.75rem",
+      background: "var(--surface-2)",
+      borderRadius: "8px",
+      gap: "0.5rem",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+        <span style={{ fontSize: "1rem", flexShrink: 0 }}>{icon}</span>
+        <span style={{ fontSize: "0.9rem", color: "var(--text-primary)" }}>{label}</span>
+      </div>
+      <span style={{
+        fontWeight: 600, fontSize: "0.88rem",
+        color: "var(--text-muted)", textAlign: "right", flexShrink: 0
+      }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function PaymentRow({ platform, handle, color, icon }) {
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: "0.875rem",
+      padding: "0.875rem 1rem", background: "var(--surface-2)",
+      borderRadius: "var(--radius-md)", borderLeft: `3px solid ${color}`,
+    }}>
+      <div style={{
+        width: "36px", height: "36px", borderRadius: "50%",
+        background: color, color: "#fff", fontWeight: 700,
+        fontSize: "1rem", display: "flex", alignItems: "center",
+        justifyContent: "center", flexShrink: 0,
+      }}>
+        {icon}
+      </div>
+      <div>
+        <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "1px" }}>{platform}</div>
+        <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--text-primary)" }}>{handle}</div>
+      </div>
     </div>
   );
 }
