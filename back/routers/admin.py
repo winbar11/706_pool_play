@@ -120,11 +120,22 @@ def list_users(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT id, username, email, phone, is_admin, created_at FROM users ORDER BY created_at")
+    cur.execute("SELECT id, username, email, phone, is_admin, paid, created_at FROM users ORDER BY created_at")
     users = cur.fetchall()
     cur.close()
     conn.close()
     return {"users": [dict(u) for u in users]}
+
+@router.post("/set-paid")
+def set_paid(user_id: int, paid: bool, authorization: str = Header(None)):
+    get_admin_user(authorization=authorization)
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET paid=%s WHERE id=%s", (1 if paid else 0, user_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {"message": "Paid status updated"}
 
 @router.post("/set-round")
 def set_round(round_num: int, authorization: str = Header(None)):

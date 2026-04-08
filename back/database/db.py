@@ -28,6 +28,9 @@ def init_db():
     cur.execute("""
         ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT
     """)
+    cur.execute("""
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS paid INTEGER DEFAULT 0
+    """)
 
     cur.execute("""
         CREATE TABLE IF NOT EXISTS golfers (

@@ -7,11 +7,6 @@ export default function AdminPage() {
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
   const [selectedTeamIds, setSelectedTeamIds] = useState([]);
-  const [paidUsers, setPaidUsers] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("paidUsers") || "{}");
-    } catch { return {}; }
-  });
   const [manualForm, setManualForm] = useState({
     golfer_id: "", round_num: "1", round_score: "",
     total_score: "", made_cut: "1", finish_position: ""
@@ -27,14 +22,6 @@ export default function AdminPage() {
 
   const notify = (m) => { setMsg(m); setErr(""); setTimeout(() => setMsg(""), 4000); };
   const fail = (e) => { setErr(e); setMsg(""); };
-
-  function togglePaid(userId) {
-    setPaidUsers(prev => {
-      const next = { ...prev, [userId]: !prev[userId] };
-      localStorage.setItem("paidUsers", JSON.stringify(next));
-      return next;
-    });
-  }
 
   const lockMut = useMutation({
     mutationFn: api.admin.lockTeams,
@@ -115,12 +102,27 @@ export default function AdminPage() {
     onError: (e) => fail(e.message),
   });
 
+  const setPaidMut = useMutation({
+    mutationFn: ({ userId, paid }) => api.admin.setPaid(userId, paid),
+    onMutate: async ({ userId, paid }) => {
+      await qc.cancelQueries(["admin-users"]);
+      const prev = qc.getQueryData(["admin-users"]);
+      qc.setQueryData(["admin-users"], old => ({
+        ...old,
+        users: old.users.map(u => u.id === userId ? { ...u, paid: paid ? 1 : 0 } : u),
+      }));
+      return { prev };
+    },
+    onError: (e, _, ctx) => { qc.setQueryData(["admin-users"], ctx.prev); fail(e.message); },
+    onSettled: () => qc.invalidateQueries(["admin-users"]),
+  });
+
   const mf = (e) => setManualForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const golfers    = gData?.golfers || [];
   const users      = usersData?.users || [];
   const teams      = lbData?.teams || [];
-  const paidCount  = users.filter(u => paidUsers[u.id]).length;
+  const paidCount  = users.filter(u => u.paid).length;
 
   return (
     <div>
@@ -230,10 +232,10 @@ export default function AdminPage() {
         </div>
 
         {/* ── Participants ── */}
-        <div className="card admin-section" style={{ overflow: "hidden" }}>
+        <div className="card admin-section" style={{ padding: 0 }}>
           <div style={{
             display: "flex", justifyContent: "space-between",
-            alignItems: "center", marginBottom: "0.75rem",
+            alignItems: "center", padding: "1.25rem 1.25rem 0.75rem",
             flexWrap: "wrap", gap: "0.5rem"
           }}>
             <div>
@@ -261,7 +263,7 @@ export default function AdminPage() {
             )}
           </div>
 
-          <div style={{ overflowX: "auto", marginLeft: "-1.25rem", marginRight: "-1.25rem" }}>
+          <div style={{ overflowX: "auto", paddingBottom: "0.5rem" }}>
             <table className="users-table" style={{ minWidth: "520px", width: "100%" }}>
               <thead>
                 <tr>
@@ -270,14 +272,14 @@ export default function AdminPage() {
                   <th>Team</th>
                   <th>Phone</th>
                   <th style={{ textAlign: "center" }}>Paid</th>
-                  <th>Role</th>
+                  <th style={{ paddingRight: "1.25rem" }}>Role</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map(u => {
                   const team    = teams.find(t => t.username === u.username);
                   const checked = team ? selectedTeamIds.includes(team.id) : false;
-                  const paid    = !!paidUsers[u.id];
+                  const paid    = !!u.paid;
 
                   return (
                     <tr key={u.id} style={{ opacity: team ? 1 : 0.55 }}>
@@ -308,7 +310,7 @@ export default function AdminPage() {
                       </td>
                       <td style={{ textAlign: "center" }}>
                         <button
-                          onClick={() => togglePaid(u.id)}
+                          onClick={() => setPaidMut.mutate({ userId: u.id, paid: !paid })}
                           style={{
                             background: "none", border: "none", cursor: "pointer",
                             fontSize: "1.1rem", lineHeight: 1, padding: "2px",
@@ -319,7 +321,7 @@ export default function AdminPage() {
                           💰
                         </button>
                       </td>
-                      <td>
+                      <td style={{ paddingRight: "1.25rem" }}>
                         {u.is_admin
                           ? <span className="badge badge-gold">Admin</span>
                           : <span className="badge badge-green">Player</span>}
