@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
 ## Updated + Added
+[0.0.13] - 2026.04.08
+- fixed how ties are shown on leaderboard page
+
+## Updated + Added
 [0.0.12] - 2026.04.08
 - updated UI features in Admin page
 - cleaned up & added more concise info to landing/home page

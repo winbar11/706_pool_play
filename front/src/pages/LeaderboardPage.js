@@ -243,8 +243,8 @@ export default function LeaderboardPage() {
               </tr>
             </thead>
             <tbody>
-              {(showAll ? teams : top10).map((team, idx) => (
-                <TeamRow key={team.id} team={team} rank={idx + 1} />
+              {(showAll ? teams : top10).map((team) => (
+                <TeamRow key={team.id} team={team} rank={team.rank} />
               ))}
               {!showAll && myTeam && (
                 <>
@@ -258,7 +258,7 @@ export default function LeaderboardPage() {
                       · · ·
                     </td>
                   </tr>
-                  <TeamRow key={myTeam.id} team={myTeam} rank={myRank + 1} />
+                  <TeamRow key={myTeam.id} team={myTeam} rank={myTeam.rank} />
                 </>
               )}
             </tbody>

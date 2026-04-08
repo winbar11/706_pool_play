@@ -27,6 +27,7 @@ def leaderboard():
     teams = cur.fetchall()
 
     result = []
+    rank = 1
     for i, team in enumerate(teams):
         cur.execute("""
             SELECT g.id, g.name, g.salary, g.world_rank,
@@ -43,9 +44,15 @@ def leaderboard():
         """, (team["id"],))
         golfers = cur.fetchall()
 
+        # Assign tied rank: same score as previous team keeps the same rank
+        if i > 0 and team["final_score"] == teams[i - 1]["final_score"]:
+            rank = result[-1]["rank"]
+        else:
+            rank = i + 1
+
         result.append({
             **dict(team),
-            "rank":        i + 1,
+            "rank":        rank,
             "final_score": team["final_score"],
             "bonus_shots": team["bonus_shots"],
             "golfers":     [dict(g) for g in golfers]
