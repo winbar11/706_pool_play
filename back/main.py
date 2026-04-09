@@ -18,16 +18,15 @@ scheduler = AsyncIOScheduler()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    # Refresh scores every 90 minutes, 8am–7pm ET on tournament days
-    # Runs at: 8:00, 9:30, 11:00, 12:30, 14:00, 15:30, 17:00, 18:30
+    # Refresh scores every 15 minutes, 8am–8pm ET on tournament days
     scheduler.add_job(refresh_scores, "cron", day_of_week="thu,fri,sat,sun",
-                        hour="8,11,14,17,20", minute=0, timezone="America/New_York",
-                        id="score_refresh_on_hour")
+                        hour="8-19", minute="0,15,30,45", timezone="America/New_York",
+                        id="score_refresh")
     scheduler.add_job(refresh_scores, "cron", day_of_week="thu,fri,sat,sun",
-                        hour="9,12,15,18", minute=30, timezone="America/New_York",
-                        id="score_refresh_on_half")
+                        hour="20", minute="0", timezone="America/New_York",
+                        id="score_refresh_8pm")
     scheduler.start()
-    logger.info("Scheduler started. Score refresh runs every 90 min, 8am-7pm ET Thu-Sun.")
+    logger.info("Scheduler started. Score refresh runs every 15 min, 8am-8pm ET Thu-Sun.")
     yield
     scheduler.shutdown()
 

@@ -213,11 +213,7 @@ export default function LeaderboardPage() {
       <div className="page-header">
         <h1>Pool Leaderboard</h1>
         <p>
-          {teams.length} {teams.length === 1 ? "entry" : "entries"} · Lowest score wins
-          <br />
-          <span style={{ fontSize: "0.8em" }}>
-            Scores refresh Thu–Sun at 8:00, 9:30, 11:00, 12:30, 2:00, 3:30, 5:00, 6:30 &amp; 8:00 PM ET
-          </span>
+          {teams.length} {teams.length === 1 ? "entry" : "entries"} · Lowest score wins · Scores are updated every 15min from 8am-8pm EST
         </p>
       </div>
 
