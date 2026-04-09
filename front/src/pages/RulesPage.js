@@ -71,7 +71,7 @@ export default function RulesPage() {
             color="var(--green-600)"
             description={
               <>
-                Awarded once per round to the team whose golfer posts the <strong>unique lowest
+                Awarded once per round to the team(s) whose golfer posts the <strong>unique lowest
                 single-round score</strong> across all golfers in the field. If two or more golfers
                 tie for the best round, <strong>no bonus is awarded</strong> for that round.
               </>
