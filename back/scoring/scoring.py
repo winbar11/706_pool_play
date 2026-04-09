@@ -33,19 +33,23 @@ def calc_team_raw_score(golfers: list) -> int:
     return sum(calc_golfer_score(g) for g in golfers)
 
 
-def calc_best_round_bonuses(all_teams: list) -> dict:
+def calc_best_round_bonuses(all_teams: list, all_golfers: list = None) -> dict:
     bonuses = {team["id"]: 0 for team in all_teams}
+
+    # Use all golfers in the field for uniqueness check (not just drafted ones)
+    field = all_golfers if all_golfers is not None else [
+        g for team in all_teams for g in team.get("golfers", [])
+    ]
 
     for round_num in range(1, 5):
         score_key = f"round{round_num}_score"
 
         golfer_scores = {}
-        for team in all_teams:
-            for g in team.get("golfers", []):
-                gid   = g["id"]
-                score = g.get(score_key)
-                if score is not None and score >= 60 and gid not in golfer_scores:
-                    golfer_scores[gid] = score
+        for g in field:
+            gid   = g["id"]
+            score = g.get(score_key)
+            if score is not None and score >= 60 and gid not in golfer_scores:
+                golfer_scores[gid] = score
 
         if not golfer_scores:
             continue
@@ -96,8 +100,8 @@ def calc_winner_bonuses(all_teams: list, tournament_complete: bool = False) -> d
     return bonuses
 
 
-def calc_all_team_scores(all_teams: list, tournament_complete: bool = False) -> dict:
-    best_round  = calc_best_round_bonuses(all_teams)
+def calc_all_team_scores(all_teams: list, tournament_complete: bool = False, all_golfers: list = None) -> dict:
+    best_round  = calc_best_round_bonuses(all_teams, all_golfers)
     solo_leader = calc_solo_leader_bonuses(all_teams)
     winner      = calc_winner_bonuses(all_teams, tournament_complete)
 

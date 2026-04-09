@@ -149,7 +149,10 @@ async def refresh_scores():
         tc_row = cur.fetchone()
         tournament_complete = tc_row is not None and tc_row["value"] == "1"
 
-        scores = calc_all_team_scores(all_teams, tournament_complete)
+        cur.execute("SELECT * FROM golfers")
+        all_golfers = [dict(g) for g in cur.fetchall()]
+
+        scores = calc_all_team_scores(all_teams, tournament_complete, all_golfers)
 
         for team_id, result in scores.items():
             logger.info(
