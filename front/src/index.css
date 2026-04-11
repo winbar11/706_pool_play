@@ -504,7 +504,7 @@ body {
   background: rgba(180,50,50,0.05);
   border-color: rgba(180,50,50,0.2);
 }
-.chip-cut .chip-name { color: var(--gray-500); text-decoration: line-through; }
+.chip-cut .chip-name { color: var(--gray-500); }
 
 /* ── Draft page ── */
 .draft-layout {

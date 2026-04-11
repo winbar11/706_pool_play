@@ -135,7 +135,7 @@ export default function LeaderboardPage() {
                       <div>
                         <div className="chip-name">
                           {g.name}
-                          {missed && <span className="cut-badge">CUT +5</span>}
+                          {missed && <span className="cut-badge">CUT +8</span>}
                           {isLeader && (
                             <span className="badge badge-gold" style={{ marginLeft: "0.3rem", fontSize: "0.62rem" }}>
                               ★ Leader

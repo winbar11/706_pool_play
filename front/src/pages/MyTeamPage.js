@@ -126,7 +126,7 @@ export default function MyTeamPage() {
                 <div>
                   <div className="my-golfer-name">
                     {g.name}
-                    {missed && <span className="cut-badge">MISSED CUT +5</span>}
+                    {missed && <span className="cut-badge">MISSED CUT +8</span>}
                     {isLeader && (
                       <span className="badge badge-gold" style={{ marginLeft: "0.4rem" }}>
                         ★ Round Leader
