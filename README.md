@@ -1,4 +1,4 @@
-# 706 Masters Pool
+# 706 Pool Play
 
 **The Official 706 Pool Play App**
 
