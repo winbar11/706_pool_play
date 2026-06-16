@@ -1,15 +1,20 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "../utils/api";
 
 const SALARY_CAP = 50000;
 const ROSTER_SIZE = 6;
+const MAX_TEAMS = 1;
 
 export default function DraftPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const qc = useQueryClient();
-  const [selected, setSelected] = useState([]);   // array of golfer objects
+  const initialized = useRef(false);
+
+  const [selectedTeamId, setSelectedTeamId] = useState(null); // null = new team
+  const [selected, setSelected] = useState([]);
   const [teamName, setTeamName] = useState("");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
@@ -30,21 +35,47 @@ export default function DraftPage() {
     queryFn: api.teams.my,
   });
 
+  const myTeams = myTeamData?.teams || [];
+  const atMax = myTeams.length >= MAX_TEAMS;
+
+  // Initialize form on first load, respecting ?team= URL param
   useEffect(() => {
-    if (myTeamData?.team && selected.length === 0) {
-      setTeamName(myTeamData.team.team_name);
-      setSelected(myTeamData.team.golfers);
+    if (!myTeamData || initialized.current) return;
+    initialized.current = true;
+
+    const teams = myTeamData.teams || [];
+    const teamIdParam = new URLSearchParams(location.search).get("team");
+
+    // "?team=new" explicitly requests a blank new-team form
+    if (teamIdParam === "new") return;
+
+    let target = null;
+    if (teamIdParam) {
+      target = teams.find(t => t.id === parseInt(teamIdParam));
     }
-  }, [myTeamData]);
+    if (!target && teams.length > 0) {
+      target = teams[0];
+    }
+
+    if (target) {
+      setSelectedTeamId(target.id);
+      setTeamName(target.team_name);
+      setSelected(target.golfers);
+    }
+  }, [myTeamData, location.search]);
 
   const isLocked = lbData?.settings?.teams_locked === "1";
 
   const mutation = useMutation({
-    mutationFn: () => api.teams.submit(teamName, selected.map(g => g.id)),
-    onSuccess: () => {
+    mutationFn: () => api.teams.submit(teamName, selected.map(g => g.id), selectedTeamId),
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["my-team"] });
       qc.invalidateQueries({ queryKey: ["leaderboard"] });
       setSuccess("Team saved! Head to the leaderboard to track your score.");
+      // Switch to the newly created team so a re-submit edits it
+      if (selectedTeamId === null) {
+        setSelectedTeamId(data.team_id);
+      }
     },
     onError: (err) => setError(err.message),
   });
@@ -84,6 +115,23 @@ export default function DraftPage() {
   };
 
   const remove = (golfer) => setSelected(s => s.filter(g => g.id !== golfer.id));
+
+  const handleTeamSelect = (e) => {
+    const val = e.target.value;
+    setSuccess("");
+    setError("");
+    if (val === "new") {
+      setSelectedTeamId(null);
+      setTeamName("");
+      setSelected([]);
+    } else {
+      const id = parseInt(val);
+      const team = myTeams.find(t => t.id === id);
+      setSelectedTeamId(id);
+      setTeamName(team.team_name);
+      setSelected(team.golfers);
+    }
+  };
 
   const submit = () => {
     setError("");
@@ -172,6 +220,23 @@ export default function DraftPage() {
             Your Roster
           </h3>
 
+          {/* Team selector (shown when user already has at least one team) */}
+          {myTeams.length > 0 && (
+            <div className="form-group" style={{ marginBottom: "1rem" }}>
+              <label>Team</label>
+              <select
+                value={selectedTeamId ?? "new"}
+                onChange={handleTeamSelect}
+                disabled={isLocked}
+              >
+                {myTeams.map(t => (
+                  <option key={t.id} value={t.id}>{t.team_name}</option>
+                ))}
+                {!atMax && <option value="new">+ New Team</option>}
+              </select>
+            </div>
+          )}
+
           {/* Salary cap bar */}
           <div>
             <div className="salary-cap-bar">
@@ -233,15 +298,15 @@ export default function DraftPage() {
             onClick={submit}
             disabled={isLocked || mutation.isPending || selected.length !== ROSTER_SIZE || spent > SALARY_CAP}
           >
-            {mutation.isPending ? "Saving…" : myTeamData?.team ? "Update Team" : "Submit Team"}
+            {mutation.isPending ? "Saving…" : selectedTeamId !== null ? "Update Team" : "Submit Team"}
           </button>
 
-          {myTeamData?.team && (
+          {myTeams.length > 0 && (
             <button
               className="btn btn-ghost btn-full mt-1"
               onClick={() => navigate("/my-team")}
             >
-              View my team →
+              View my teams →
             </button>
           )}
         </div>

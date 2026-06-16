@@ -61,10 +61,11 @@ def init_db():
             user_id     INTEGER NOT NULL REFERENCES users(id),
             team_name   TEXT NOT NULL,
             total_salary INTEGER NOT NULL,
+            final_score INTEGER DEFAULT 0,
+            bonus_shots INTEGER DEFAULT 0,
             is_locked   INTEGER DEFAULT 0,
             dk_total_points REAL DEFAULT 0,
-            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(user_id)
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
@@ -88,6 +89,24 @@ def init_db():
     cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('tournament_year', '2026') ON CONFLICT (key) DO NOTHING")
     cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('tournament_complete', '0') ON CONFLICT (key) DO NOTHING")
     cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('pot_amount', '0') ON CONFLICT (key) DO NOTHING")
+    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('theme', 'masters') ON CONFLICT (key) DO NOTHING")
+
+    # Allow multiple teams per user (removes the old single-team constraint)
+    cur.execute("ALTER TABLE teams DROP CONSTRAINT IF EXISTS teams_user_id_key")
+
+    # Add scoring columns missing from original schema
+    cur.execute("ALTER TABLE teams ADD COLUMN IF NOT EXISTS final_score INTEGER DEFAULT 0")
+    cur.execute("ALTER TABLE teams ADD COLUMN IF NOT EXISTS bonus_shots INTEGER DEFAULT 0")
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+            token       TEXT PRIMARY KEY,
+            user_id     INTEGER NOT NULL REFERENCES users(id),
+            expires_at  TIMESTAMP NOT NULL,
+            used        INTEGER DEFAULT 0,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
 
     conn.commit()
     cur.close()
@@ -109,32 +128,35 @@ def _seed_golfers():
     golfers = [
         # 2026 Masters Tournament field — DK salaries from DKSalaries.csv
         # (espn_id, name, salary, world_rank, country)
-        ("9478",    "Scottie Scheffler",            12000, 1,   "USA"),
-        ("3470",    "Rory McIlroy",                 11600, 2,   "NIR"),
-        ("10046",   "Bryson DeChambeau",            10200, 8,   "USA"),
-        ("9780",    "Jon Rahm",                     10000, 7,    "ESP"),
-        ("4375972", "Ludvig Åberg",                 9900,  3,   "SWE"),
-        ("10140",   "Xander Schauffele",            9700,  4,   "USA"),
-        ("5539",    "Tommy Fleetwood",              9300,  6,   "ENG"),
-        ("4425906", "Cameron Young",                9300,  18,  "USA"),
-        ("10592",   "Collin Morikawa",              9200,  5,   "USA"),
-        ("569",     "Justin Rose",                  9000,  45,  "ENG"),
-        ("5579",    "Patrick Reed",                 8900,  55,  "USA"),
-        ("5860",    "Hideki Matsuyama",             8900,  12,  "JPN"),
-        ("4364873", "Viktor Hovland",               8800,  5,   "NOR"),
-        ("9037",    "Matt Fitzpatrick",             8700,  20,  "ENG"),
-        ("11378",   "Robert MacIntyre",             8600,  10,  "SCO"),
-        ("10166",   "J.J. Spaun",                   8500,  24,  "USA"),
-        ("5467",    "Jordan Spieth",                8300,  19,  "USA"),
+        ("9478",    "Scottie Scheffler",            12300, 1,   "USA"),
+        ("3470",    "Rory McIlroy",                 12300, 2,   "NIR"),
+        ("9780",    "Jon Rahm",                     11700, 7,   "ESP"),
+        ("10046",   "Bryson DeChambeau",            11000, 8,   "USA"),
+        ("4425906", "Cameron Young",                10500, 18,  "USA"),
+        ("10140",   "Xander Schauffele",            10100, 4,   "USA"),
+        ("5539",    "Tommy Fleetwood",              9700,  6,   "ENG"),
+        ("4375972", "Ludvig Åberg",                 9500,  3,   "SWE"),
+        ("6798",    "Brooks Koepka",                9300,  14,  "USA"),
+        ("9037",    "Matthew Fitzpatrick",          8900,  20,  "ENG"),
+        ("5553",    "Tyrrell Hatton",               8700,  13,  "ENG"),
+        ("10592",   "Collin Morikawa",              8500,  5,   "USA"),
+        ("569",     "Justin Rose",                  8400,  45,  "ENG"),
         ("4848",    "Justin Thomas",                8300,  11,  "USA"),
+        ("4690755", "Chris Gotterup",               8200,  150, "USA"),
+        ("4364873", "Viktor Hovland",               8100,  5,   "NOR"),
+        ("5409",    "Russell Henley",               8000,  9,   "USA"),
+        ("5579",    "Patrick Reed",                 7900,  55,  "USA"),
+        ("11119",   "Wyndham Clark",                7800,  16,  "USA"),
+        ("9938",    "Sam Burns",                    7700,  22,  "USA"),
+        ("5860",    "Hideki Matsuyama",             7600,  12,  "JPN"),
+        ("10166",   "J.J. Spaun",                   7500,  24,  "USA"),
+        ("11099",   "Joaquín Niemann",              7400,  100,  "CHI"),
+        ("11378",   "Robert MacIntyre",             8600,  10,  "SCO"),
+        ("5467",    "Jordan Spieth",                8300,  19,  "USA"),
         ("4587",    "Shane Lowry",                  8200,  15,  "IRL"),
-        ("5553",    "Tyrrell Hatton",               8100,  13,  "ENG"),
-        ("6798",    "Brooks Koepka",                8100,  14,  "USA"),
-        ("4690755", "Chris Gotterup",               8000,  150, "USA"),
         ("8961",    "Sepp Straka",                  8000,  21,  "AUT"),
         ("4419142", "Akshay Bhatia",                8000,  17,  "USA"),
         ("6007",    "Patrick Cantlay",              7900,  11,  "USA"),
-        ("5409",    "Russell Henley",               7900,  9,   "USA"),
         ("7081",    "Si Woo Kim",                   7800,  27,  "KOR"),
         ("4410932", "Min Woo Lee",                  7700,  26,  "AUS"),
         ("9126",    "Corey Conners",                7700,  30,  "CAN"),
@@ -148,14 +170,12 @@ def _seed_golfers():
         ("1225",    "Brian Harman",                 7500,  22,  "USA"),
         ("5054388", "Jacob Bridgeman",              7400,  185, "USA"),
         ("9025",    "Daniel Berger",                7400,  38, "USA"),
-        ("9938",    "Sam Burns",                    7400,  22,  "USA"),
         ("5408",    "Harris English",               7300,  30,  "USA"),
         ("8973",    "Max Homa",                     7300,  20,  "USA"),
         ("11250",   "Nicolai Højgaard",             7300,  36,  "DEN"),
         ("4585549", "Marco Penge",                  7300,  165, "ENG"),
         ("4901368", "Matt McCarty",                 7300,  49,  "USA"),
         ("9530",    "Maverick McNealy",             7200,  75,  "USA"),
-        ("11119",   "Wyndham Clark",                7100,  16,  "USA"),
         ("4251",    "Ryan Fox",                     7100,  65,  "NZL"),
         ("158",     "Sergio Garcia",                7100,  210, "ESP"),
         ("3832",    "Alex Noren",                   7000,  29,  "SWE"),

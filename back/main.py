@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     yield
     scheduler.shutdown()
 
-app = FastAPI(title="Masters Pool", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="7oh6 Pool", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

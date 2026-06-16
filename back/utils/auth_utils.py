@@ -5,9 +5,15 @@ import secrets
 import time
 import json
 import base64
+import smtplib
+import logging
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 SECRET_KEY = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 TOKEN_EXPIRE_SECONDS = 60 * 60 * 24 * 7  # 7 days
+
+logger = logging.getLogger(__name__)
 
 def hash_password(password: str) -> str:
     salt = secrets.token_hex(16)
@@ -51,3 +57,55 @@ def decode_token(token: str) -> dict | None:
         return payload
     except Exception:
         return None
+
+def send_reset_email(to_email: str, token: str) -> bool:
+    smtp_host = os.environ.get("SMTP_HOST", "")
+    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    smtp_user = os.environ.get("SMTP_USER", "")
+    smtp_pass = os.environ.get("SMTP_PASSWORD", "")
+    smtp_from = os.environ.get("SMTP_FROM", smtp_user)
+    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+
+    if not smtp_host or not smtp_user:
+        logger.warning("SMTP not configured — skipping reset email to %s", to_email)
+        return False
+
+    reset_url = f"{frontend_url}/reset-password?token={token}"
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = "706 Masters Pool — Reset Your Password"
+    msg["From"] = smtp_from
+    msg["To"] = to_email
+
+    text = (
+        f"Reset your 706 Masters Pool password:\n\n"
+        f"{reset_url}\n\n"
+        f"This link expires in 1 hour. If you didn't request this, ignore this email."
+    )
+    html = f"""<div style="font-family:sans-serif;max-width:480px;margin:0 auto">
+  <h2 style="color:#1a3a1a">706 Masters Pool</h2>
+  <p>You requested a password reset. Click the button below to set a new password:</p>
+  <p>
+    <a href="{reset_url}"
+       style="display:inline-block;padding:12px 24px;background:#2d6a2d;
+              color:#fff;text-decoration:none;border-radius:6px;font-weight:bold">
+      Reset Password
+    </a>
+  </p>
+  <p style="color:#666;font-size:0.88em">Or copy this link:<br>{reset_url}</p>
+  <p style="color:#666;font-size:0.88em">
+    This link expires in <strong>1 hour</strong>.
+    If you didn't request this, you can safely ignore this email.
+  </p>
+</div>"""
+
+    msg.attach(MIMEText(text, "plain"))
+    msg.attach(MIMEText(html, "html"))
+
+    with smtplib.SMTP(smtp_host, smtp_port) as server:
+        server.ehlo()
+        server.starttls()
+        server.login(smtp_user, smtp_pass)
+        server.sendmail(smtp_from, [to_email], msg.as_string())
+
+    return True

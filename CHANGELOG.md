@@ -3,10 +3,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
-## Fixed
+## Update + Added
 [0.0.15] - 2026.05.04
-- 2026 PGA Championship field update
-- new UI
+- 2026 U.S. Open field update
+- new US Open UI theme
+- Users can create up to 3 teams per tournament
+- added 'Forgot Password' functionality to login page
 
 ## Fixed
 [0.0.14] - 2026.04.09
@@ -21,7 +23,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 - updated UI features in Admin page
 - cleaned up & added more concise info to landing/home page
 - added leaderboard truncation functionality
-  - also added player to always see where there team is located if they're not in the top 10
+  - added player to always see where there team is located if they're not in the top 10
 
 ## Updated
 [0.0.11] - 2026.04.06

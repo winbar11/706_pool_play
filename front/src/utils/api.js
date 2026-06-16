@@ -27,21 +27,27 @@ const api = {
       method: "POST", body: JSON.stringify({ username: u, password: p })
     }),
     me: () => request("/api/auth/me"),
+    forgotPassword: (email) => request("/api/auth/forgot-password", {
+      method: "POST", body: JSON.stringify({ email })
+    }),
+    resetPassword: (token, password) => request("/api/auth/reset-password", {
+      method: "POST", body: JSON.stringify({ token, password })
+    }),
   },
   golfers: {
     list: () => request("/api/golfers"),
   },
   teams: {
-    submit: (team_name, golfer_ids) =>
-      request("/api/teams/submit", { method: "POST", body: JSON.stringify({ team_name, golfer_ids }) }),
+    submit: (team_name, golfer_ids, team_id = null) =>
+      request("/api/teams/submit", {
+        method: "POST",
+        body: JSON.stringify({ team_name, golfer_ids, ...(team_id !== null ? { team_id } : {}) }),
+      }),
     my: () => request("/api/teams/my"),
     get: (id) => request(`/api/teams/${id}`),
   },
   leaderboard: {
     get: () => request("/api/leaderboard"),
-  },
-  settings: {
-    get: () => request("/api/settings"),
   },
   settings: {
     get: () => request("/api/settings"),
@@ -61,6 +67,7 @@ const api = {
     clearScores: () => request("/api/admin/clear-scores", { method: "POST" }),
     resetGolfers: () => request("/api/admin/reset-golfers", { method: "POST" }),
     setPot: (amount) => request(`/api/admin/set-pot?amount=${amount}`, { method: "POST" }),
+    setTheme: (theme) => request(`/api/admin/set-theme?theme=${theme}`, { method: "POST" }),
     setPaid: (user_id, paid) => request(`/api/admin/set-paid?user_id=${user_id}&paid=${paid}`, { method: "POST" }),
   },
 };

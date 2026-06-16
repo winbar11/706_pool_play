@@ -997,3 +997,156 @@ body {
     padding: 0.7rem 0.5rem;
   }
 }
+
+/* ════════════════════════════════════════════════
+   US OPEN THEME
+   Override CSS variables + fix hardcoded colors
+   ════════════════════════════════════════════════ */
+
+[data-theme="us-open"] {
+  /* Light blue-gray backgrounds replace warm cream */
+  --cream:      #eef3fa;
+  --cream-dark: #d4e0f0;
+
+  /* Navy blues replace forest greens */
+  --green-900: #001040;
+  --green-800: #001a60;
+  --green-700: #002070;
+  --green-600: #002d9c;
+  --green-500: #0a3db5;
+  --green-400: #2255c0;
+  --green-300: #4476d4;
+  --green-200: #7aabe8;
+  --green-100: #b8d0f0;
+  --green-50:  #ecf2fc;
+
+  /* Gold: slightly cooler, more classic */
+  --gold-500: #b8892a;
+  --gold-400: #c89a3c;
+  --gold-300: #b8892a;
+  --gold-200: #8a6410;
+  --gold-100: #f0e4b8;
+  --gold-50:  #fdf6e8;
+
+  /* Text: navy tones */
+  --text-primary:   #001f6b;
+  --text-secondary: #0a3080;
+  --text-muted:     #4a6699;
+
+  /* Shadows: blue-tinted */
+  --shadow-sm:   0 1px 4px rgba(0,32,107,0.10);
+  --shadow-md:   0 4px 16px rgba(0,32,107,0.13);
+  --shadow-lg:   0 8px 32px rgba(0,32,107,0.18);
+  --shadow-gold: 0 0 20px rgba(184,137,42,0.25);
+}
+
+/* ── Dark navy navbar (signature US Open look) ── */
+[data-theme="us-open"] .navbar {
+  background: #002855;
+  border-bottom: 2px solid #b8892a;
+  box-shadow: 0 2px 8px rgba(0,40,85,0.20);
+}
+[data-theme="us-open"] .navbar-brand .brand-text { color: #e8f0fc; }
+[data-theme="us-open"] .navbar-username           { color: #b0c4e8; }
+[data-theme="us-open"] .nav-link                  { color: #d0ddf5; }
+[data-theme="us-open"] .nav-link:hover {
+  color: #ffffff;
+  background: rgba(255,255,255,0.08);
+}
+[data-theme="us-open"] .nav-link.active {
+  color: #f0d870;
+  background: rgba(240,216,112,0.12);
+  font-weight: 600;
+}
+
+/* Sign-out button in dark navbar */
+[data-theme="us-open"] .btn-ghost {
+  border-color: rgba(255,255,255,0.30);
+  color: #d0ddf5;
+}
+[data-theme="us-open"] .btn-ghost:hover:not(:disabled) {
+  background: rgba(255,255,255,0.10);
+  color: #ffffff;
+}
+
+/* ── Scrollbar ── */
+[data-theme="us-open"] ::-webkit-scrollbar-thumb { background: #2255c0; }
+
+/* ── Auth card: navy border instead of gold ── */
+[data-theme="us-open"] .auth-card { border-color: #4a70d0; }
+
+/* ── Form focus ring ── */
+[data-theme="us-open"] .form-group input:focus,
+[data-theme="us-open"] .form-group select:focus {
+  border-color: #002d9c;
+  box-shadow: 0 0 0 3px rgba(0,45,156,0.15);
+}
+
+/* ── Leaderboard "my team" highlight ── */
+[data-theme="us-open"] .team-row-me {
+  background: rgba(0,45,156,0.07);
+  box-shadow: inset 3px 0 0 #002d9c;
+}
+[data-theme="us-open"] .team-row-me:hover { background: rgba(0,45,156,0.12); }
+
+/* ── Tournament banner left accent ── */
+[data-theme="us-open"] .tournament-banner { border-left-color: #002d9c; }
+
+/* ── Round pills ── */
+[data-theme="us-open"] .round-pill.complete {
+  background: rgba(0,45,156,0.09);
+  color: #002070;
+  border-color: rgba(0,45,156,0.25);
+}
+[data-theme="us-open"] .round-pill.current {
+  background: rgba(184,137,42,0.10);
+  color: #6a4a00;
+  border-color: rgba(184,137,42,0.40);
+}
+
+/* ── Locked banner ── */
+[data-theme="us-open"] .locked-banner {
+  background: rgba(0,45,156,0.05);
+  border-color: rgba(0,45,156,0.20);
+  color: #002070;
+}
+
+/* ── Badges ── */
+[data-theme="us-open"] .badge-gold {
+  background: rgba(0,45,156,0.10);
+  color: #002060;
+  border-color: rgba(0,45,156,0.30);
+}
+[data-theme="us-open"] .badge-green {
+  background: rgba(0,45,156,0.09);
+  color: #002d9c;
+  border-color: rgba(0,45,156,0.22);
+}
+
+/* ── Salary bar: navy fill ── */
+[data-theme="us-open"] .salary-cap-fill.safe { background: #002d9c; }
+
+/* ── Golfer row selection ── */
+[data-theme="us-open"] .golfer-row:hover:not(.selected):not(.disabled) {
+  border-color: #2255c0;
+}
+[data-theme="us-open"] .golfer-row.selected {
+  background: rgba(0,45,156,0.06);
+  border-color: #002d9c;
+}
+
+/* ── Roster slot ── */
+[data-theme="us-open"] .roster-slot.filled {
+  border-color: #002d9c;
+  background: rgba(0,45,156,0.04);
+}
+
+/* ── Admin section heading divider ── */
+[data-theme="us-open"] .admin-section h3 {
+  border-bottom-color: var(--cream-dark);
+}
+
+/* ── Footer ── */
+[data-theme="us-open"] .site-footer {
+  border-top-color: var(--cream-dark);
+}

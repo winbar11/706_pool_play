@@ -19,6 +19,7 @@ export default function AdminPage() {
   const isLocked = lbData?.settings?.teams_locked === "1";
   const currentRound = lbData?.settings?.current_round || "0";
   const isTournamentComplete = lbData?.settings?.tournament_complete === "1";
+  const currentTheme = lbData?.settings?.theme || "masters";
 
   const notify = (m) => { setMsg(m); setErr(""); setTimeout(() => setMsg(""), 4000); };
   const fail = (e) => { setErr(e); setMsg(""); };
@@ -98,6 +99,18 @@ export default function AdminPage() {
       qc.invalidateQueries(["leaderboard"]);
       qc.invalidateQueries(["golfers"]);
       notify("Golfer updated successfully.");
+    },
+    onError: (e) => fail(e.message),
+  });
+
+  const themeMut = useMutation({
+    mutationFn: (theme) => api.admin.setTheme(theme),
+    onSuccess: (data) => {
+      qc.invalidateQueries(["leaderboard"]);
+      // Apply immediately in this browser too
+      document.documentElement.setAttribute("data-theme", data.theme);
+      localStorage.setItem("theme", data.theme);
+      notify(`Theme set to ${data.theme === "us-open" ? "US Open" : "Masters"}.`);
     },
     onError: (e) => fail(e.message),
   });
@@ -331,6 +344,49 @@ export default function AdminPage() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* ── Appearance ── */}
+        <div className="card admin-section">
+          <h3>Appearance</h3>
+          <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
+            Switch the site theme for all users.
+          </p>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <button
+              className={`btn ${currentTheme === "masters" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => themeMut.mutate("masters")}
+              disabled={themeMut.isPending || currentTheme === "masters"}
+              style={{ flex: 1, minWidth: "120px" }}
+            >
+              <span style={{ marginRight: "0.4rem" }}>🌿</span>
+              Masters
+              {currentTheme === "masters" && (
+                <span style={{
+                  marginLeft: "0.5rem", fontSize: "0.72rem",
+                  background: "rgba(255,255,255,0.2)", borderRadius: "4px", padding: "1px 5px"
+                }}>Active</span>
+              )}
+            </button>
+            <button
+              className={`btn ${currentTheme === "us-open" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => themeMut.mutate("us-open")}
+              disabled={themeMut.isPending || currentTheme === "us-open"}
+              style={{
+                flex: 1, minWidth: "120px",
+                ...(currentTheme === "us-open" ? { background: "#002855", color: "#f0d870" } : {})
+              }}
+            >
+              <span style={{ marginRight: "0.4rem" }}>⛳</span>
+              US Open
+              {currentTheme === "us-open" && (
+                <span style={{
+                  marginLeft: "0.5rem", fontSize: "0.72rem",
+                  background: "rgba(255,255,255,0.15)", borderRadius: "4px", padding: "1px 5px"
+                }}>Active</span>
+              )}
+            </button>
           </div>
         </div>
 

@@ -36,8 +36,8 @@ Final Score = Raw Score + Bonus Shots
 
 - Pick exactly **6 golfers**
 - Total salary must be **≤ $50,000**
-- Teams are **locked when the tournament begins** — no changes after lock
-- One team per account
+- Teams are **locked when the tournament begins** — *NO* changes after lock
+- 3 Teams per account ($15 per entry)
 
 ### Tiebreaker
 

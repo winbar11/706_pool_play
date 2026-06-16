@@ -209,6 +209,19 @@ def reset_golfers(authorization: str = Header(None)):
     _seed_golfers()
     return {"message": "Golfer field reset and re-seeded. All teams cleared."}
 
+@router.post("/set-theme")
+def set_theme(theme: str, authorization: str = Header(None)):
+    get_admin_user(authorization=authorization)
+    if theme not in ("masters", "us-open"):
+        raise HTTPException(400, "Invalid theme. Must be 'masters' or 'us-open'")
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("UPDATE tournament_settings SET value=%s WHERE key='theme'", (theme,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {"message": f"Theme set to {theme}", "theme": theme}
+
 @router.post("/set-pot")
 def set_pot(amount: int, authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
