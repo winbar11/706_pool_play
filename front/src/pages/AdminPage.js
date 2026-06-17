@@ -219,7 +219,7 @@ export default function AdminPage() {
               onClick={() => syncRankingsMut.mutate()}
               disabled={syncRankingsMut.isPending}
             >
-              {syncRankingsMut.isPending ? "Syncing…" : "🔄 Sync World Rankings"}
+              {syncRankingsMut.isPending ? "Syncing…" : "🔄 Sync Golfer Data"}
             </button>
           </div>
 
