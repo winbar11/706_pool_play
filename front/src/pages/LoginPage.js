@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import logo from "../static/706_pool_logo.svg";
+import logo from "../static/usa706.webp";
 
 export default function LoginPage() {
   const { login } = useAuth();

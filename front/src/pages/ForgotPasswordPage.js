@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../utils/api";
-import logo from "../static/706_pool_logo.svg";
+import logo from "../static/usa706.webp";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

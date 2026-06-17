@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../utils/api.js";
 import { useAuth } from "../context/AuthContext.js";
-import logo from "../static/706_pool_logo.svg";
+import logo from "../static/usa706.webp";
 
 function fmtScore(score) {
   if (score === null || score === undefined) return "—";

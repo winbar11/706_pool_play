@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/api.js";
-import logo from "../static/706_pool_logo.svg";
+import logo from "../static/usa706.webp";
 
 export default function WelcomePage() {
   const { user } = useAuth() ?? {};
@@ -119,7 +119,7 @@ export default function WelcomePage() {
           Pay Your Entry Fee
         </h2>
         <p style={{ marginBottom: "1rem", lineHeight: "1.7" }}>
-          Entry fee is <strong>$10</strong>. Send via Venmo or PayPal before drafting. Include your{" "}
+          Entry fee is <strong>$15</strong>. Send via Venmo or PayPal before drafting. Include your{" "}
           <strong>username</strong> in the payment note so we can confirm your entry.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
