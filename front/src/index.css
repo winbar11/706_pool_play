@@ -1043,7 +1043,7 @@ body {
 /* ── Dark navy navbar (signature US Open look) ── */
 [data-theme="us-open"] .navbar {
   background: #002855;
-  border-bottom: 2px solid #b8892a;
+  border-bottom: 2px solid #dc2626;
   box-shadow: 0 2px 8px rgba(0,40,85,0.20);
 }
 [data-theme="us-open"] .navbar-brand .brand-text { color: #e8f0fc; }
