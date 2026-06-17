@@ -86,6 +86,14 @@ export default function AdminPage() {
     },
     onError: (e) => fail(e.message),
   });
+  const syncRankingsMut = useMutation({
+    mutationFn: api.admin.syncRankings,
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["golfers"] });
+      notify(data.message);
+    },
+    onError: (e) => fail(e.message),
+  });
   const manualMut = useMutation({
     mutationFn: () => api.admin.updateGolfer({
       golfer_id:       parseInt(manualForm.golfer_id),
@@ -203,6 +211,18 @@ export default function AdminPage() {
           </div>
 
           {/* Danger zone */}
+          <hr className="divider" />
+          <h3>Golfer Data</h3>
+          <div className="admin-btn-group">
+            <button
+              className="btn btn-secondary"
+              onClick={() => syncRankingsMut.mutate()}
+              disabled={syncRankingsMut.isPending}
+            >
+              {syncRankingsMut.isPending ? "Syncing…" : "🔄 Sync World Rankings"}
+            </button>
+          </div>
+
           <hr className="divider" />
           <h3 style={{ color: "#b91c1c" }}>⚠️ Danger Zone</h3>
           <div className="admin-btn-group">

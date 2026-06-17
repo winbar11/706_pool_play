@@ -114,20 +114,9 @@ def init_db():
     _seed_golfers()
 
 
-def _seed_golfers():
-    """Seed golfers only if the table is empty."""
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) as n FROM golfers")
-    count = cur.fetchone()["n"]
-    if count > 0:
-        cur.close()
-        conn.close()
-        return
-
-    golfers = [
-        # 2026 US IOpen field — DK salaries from DKSalaries.csv
-        # (espn_id, name, salary, world_rank, country)
+GOLFER_SEED_DATA = [
+    # 2026 US Open field — DK salaries from DKSalaries.csv
+    # (espn_id, name, salary, world_rank, country)
         ("9478",    "Scottie Scheffler",            12300, 1,   "USA"),
         ("3470",    "Rory McIlroy",                 12300, 2,   "NIR"),
         ("9780",    "Jon Rahm",                     11700, 7,   "ESP"),
@@ -284,9 +273,21 @@ def _seed_golfers():
         ("5327840", "Greyson nLeach",               5000,  999, "USA"),
         ("5360549", "Jackson Ormond",               5000,  999, "USA"),
         ("5362524", "Arni Sveinsson",               5000,  999, "USA"),
-    ]
+]
 
-    for i, (espn_id, name, salary, rank, country) in enumerate(golfers):
+
+def _seed_golfers():
+    """Seed golfers only if the table is empty."""
+    conn = get_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as n FROM golfers")
+    count = cur.fetchone()["n"]
+    if count > 0:
+        cur.close()
+        conn.close()
+        return
+
+    for i, (espn_id, name, salary, rank, country) in enumerate(GOLFER_SEED_DATA):
         unique_espn = f"{espn_id}_{i}"
         cur.execute("""
             INSERT INTO golfers (espn_id, name, salary, world_rank, country)
@@ -296,3 +297,20 @@ def _seed_golfers():
     conn.commit()
     cur.close()
     conn.close()
+
+
+def sync_golfer_rankings():
+    """Update world_rank, salary, and country for existing golfers from seed data without touching teams."""
+    conn = get_conn()
+    cur = conn.cursor()
+    updated = 0
+    for (_, name, salary, rank, country) in GOLFER_SEED_DATA:
+        cur.execute(
+            "UPDATE golfers SET world_rank=%s, salary=%s, country=%s WHERE name=%s",
+            (rank, salary, country, name)
+        )
+        updated += cur.rowcount
+    conn.commit()
+    cur.close()
+    conn.close()
+    return updated

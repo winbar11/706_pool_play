@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from typing import List
-from database.db import get_conn, _seed_golfers
+from database.db import get_conn, _seed_golfers, sync_golfer_rankings
 from dependencies import get_admin_user
 from scoring.scoring import calc_golfer_score, calc_all_team_scores
 from scheduler.scheduler import refresh_scores
@@ -193,6 +193,13 @@ def clear_teams(authorization: str = Header(None)):
     cur.close()
     conn.close()
     return {"message": "All teams cleared successfully"}
+
+@router.post("/sync-rankings")
+def sync_rankings(authorization: str = Header(None)):
+    """Update world_rank, salary, and country from seed data without touching teams."""
+    get_admin_user(authorization=authorization)
+    updated = sync_golfer_rankings()
+    return {"message": f"Rankings synced. {updated} golfer(s) updated.", "updated": updated}
 
 @router.post("/reset-golfers")
 def reset_golfers(authorization: str = Header(None)):

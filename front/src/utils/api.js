@@ -66,6 +66,7 @@ const api = {
     clearTeams: () => request("/api/admin/clear-teams", { method: "POST" }),
     clearScores: () => request("/api/admin/clear-scores", { method: "POST" }),
     resetGolfers: () => request("/api/admin/reset-golfers", { method: "POST" }),
+    syncRankings: () => request("/api/admin/sync-rankings", { method: "POST" }),
     setPot: (amount) => request(`/api/admin/set-pot?amount=${amount}`, { method: "POST" }),
     setTheme: (theme) => request(`/api/admin/set-theme?theme=${theme}`, { method: "POST" }),
     setPaid: (user_id, paid) => request(`/api/admin/set-paid?user_id=${user_id}&paid=${paid}`, { method: "POST" }),
