@@ -38,7 +38,7 @@ export default function WelcomePage() {
         <img src={logo} alt="706 Pool Play" height="64" style={{ objectFit: "contain", flexShrink: 0 }} />
         <div>
           <h1>How to Enter</h1>
-          <p>Masters Tournament &mdash; April 9–12, 2026</p>
+          <p>U.S. Open &mdash; June 18–21, 2026</p>
         </div>
       </div>
 

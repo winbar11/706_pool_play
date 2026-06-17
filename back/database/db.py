@@ -126,7 +126,7 @@ def _seed_golfers():
         return
 
     golfers = [
-        # 2026 Masters Tournament field — DK salaries from DKSalaries.csv
+        # 2026 US IOpen field — DK salaries from DKSalaries.csv
         # (espn_id, name, salary, world_rank, country)
         ("9478",    "Scottie Scheffler",            12300, 1,   "USA"),
         ("3470",    "Rory McIlroy",                 12300, 2,   "NIR"),
