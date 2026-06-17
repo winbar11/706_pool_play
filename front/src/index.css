@@ -15,14 +15,14 @@
   --green-100: #c2dfc8;
   --green-50:  #eaf3ec;
 
-  --gold-900: #3d2800;
-  --gold-700: #7a5000;
-  --gold-500: #c8922a;
-  --gold-400: #d4a843;
-  --gold-300: #c8922a;
-  --gold-200: #9a6c18;
-  --gold-100: #f5e9c0;
-  --gold-50:  #fdf8ec;
+  --gold-900: #3b0000;
+  --gold-700: #7f1d1d;
+  --gold-500: #dc2626;
+  --gold-400: #ef4444;
+  --gold-300: #dc2626;
+  --gold-200: #b91c1c;
+  --gold-100: #fee2e2;
+  --gold-50:  #fef2f2;
 
   --white:     #ffffff;
   --off-white: #f8f6f0;
@@ -47,7 +47,7 @@
   --shadow-sm:   0 1px 4px rgba(26,61,32,0.10);
   --shadow-md:   0 4px 16px rgba(26,61,32,0.13);
   --shadow-lg:   0 8px 32px rgba(26,61,32,0.18);
-  --shadow-gold: 0 0 20px rgba(200,146,42,0.25);
+  --shadow-gold: 0 0 20px rgba(220,38,38,0.25);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -101,7 +101,7 @@ body {
 
 .auth-card {
   background: var(--white);
-  border: 1px solid #c8922a;
+  border: 1px solid #dc2626;
   border-radius: var(--radius-xl);
   padding: 2.5rem;
   width: 100%;
@@ -415,7 +415,7 @@ body {
 }
 .team-row:hover { background: var(--cream); }
 .team-row:last-child { border-bottom: none; }
-.team-row-me { background: rgba(200, 146, 42, 0.13); box-shadow: inset 3px 0 0 #c8922a; }
+.team-row-me { background: rgba(200, 146, 42, 0.13); box-shadow: inset 3px 0 0 #dc2626; }
 .team-row-me:hover { background: rgba(200, 146, 42, 0.2); }
 
 .team-row td {
@@ -863,9 +863,9 @@ body {
 }
 
 .badge-gold {
-  background: rgba(200,146,42,0.15);
-  color: #7a5000;
-  border: 1px solid rgba(200,146,42,0.4);
+  background: rgba(220,38,38,0.12);
+  color: #b91c1c;
+  border: 1px solid rgba(220,38,38,0.35);
 }
 
 .badge-green {
@@ -1020,13 +1020,13 @@ body {
   --green-100: #b8d0f0;
   --green-50:  #ecf2fc;
 
-  /* Gold: slightly cooler, more classic */
-  --gold-500: #b8892a;
-  --gold-400: #c89a3c;
-  --gold-300: #b8892a;
-  --gold-200: #8a6410;
-  --gold-100: #f0e4b8;
-  --gold-50:  #fdf6e8;
+  /* Red (replacing gold) */
+  --gold-500: #dc2626;
+  --gold-400: #ef4444;
+  --gold-300: #dc2626;
+  --gold-200: #b91c1c;
+  --gold-100: #fee2e2;
+  --gold-50:  #fef2f2;
 
   /* Text: navy tones */
   --text-primary:   #001f6b;
@@ -1037,7 +1037,7 @@ body {
   --shadow-sm:   0 1px 4px rgba(0,32,107,0.10);
   --shadow-md:   0 4px 16px rgba(0,32,107,0.13);
   --shadow-lg:   0 8px 32px rgba(0,32,107,0.18);
-  --shadow-gold: 0 0 20px rgba(184,137,42,0.25);
+  --shadow-gold: 0 0 20px rgba(220,38,38,0.25);
 }
 
 /* ── Dark navy navbar (signature US Open look) ── */
