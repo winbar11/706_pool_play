@@ -138,7 +138,7 @@ export default function RulesPage() {
           <li>Total salary must be <strong>≤ $50,000</strong></li>
           <li>Higher-rated golfers cost more — budget wisely</li>
           <li>Teams are <strong>locked when the tournament begins</strong> — no changes after lock</li>
-          <li>Up to 3 teams per account</li>
+          <li>1 team per account</li>
         </ul>
       </div>
 

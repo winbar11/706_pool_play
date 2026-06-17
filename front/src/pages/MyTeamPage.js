@@ -44,7 +44,7 @@ export default function MyTeamPage() {
     <div>
       <div className="page-header">
         <h1>My Teams</h1>
-        <p>{myTeams.length} of 3 teams entered</p>
+        <p>{myTeams.length} of 1 team entered</p>
       </div>
 
       {!isLocked && myTeams.length < 3 && (

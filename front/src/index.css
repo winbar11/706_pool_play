@@ -324,7 +324,7 @@ body {
 }
 .nav-link.active {
   color: var(--gold-500);
-  background: rgba(200,146,42,0.1);
+  background: rgba(220,38,38,0.1);
   font-weight: 600;
 }
 
@@ -1054,8 +1054,8 @@ body {
   background: rgba(255,255,255,0.08);
 }
 [data-theme="us-open"] .nav-link.active {
-  color: #f0d870;
-  background: rgba(240,216,112,0.12);
+  color: #ef4444;
+  background: rgba(220,38,38,0.15);
   font-weight: 600;
 }
 
