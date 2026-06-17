@@ -6,6 +6,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
 def get_conn():
     url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    print(f"[DB] Connecting with URL length={len(url)}, starts_with={url[:20] if url else 'EMPTY'}", flush=True)
     conn = psycopg.connect(url, row_factory=dict_row, sslmode="require")
     return conn
 
