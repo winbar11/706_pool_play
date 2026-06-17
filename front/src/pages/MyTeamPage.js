@@ -114,7 +114,7 @@ export default function MyTeamPage() {
             {!isLocked && (
               <Link to={`/draft?team=${team.id}`} className="btn btn-secondary"
                 style={{ marginBottom: "1.5rem", display: "inline-flex" }}>
-                ✏️ Edit lineup
+                Edit lineup
               </Link>
             )}
 
