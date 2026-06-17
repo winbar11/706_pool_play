@@ -39,7 +39,7 @@ export default function ResetPasswordPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <img src={logo} alt="706 Masters Pool" height="150" style={{ objectFit: "contain" }} />
+          <img src={logo} alt="706 Pool Play" height="150" style={{ objectFit: "contain" }} />
         </div>
 
         <h2>Choose New Password</h2>

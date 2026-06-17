@@ -194,11 +194,11 @@ export default function LeaderboardPage() {
     <div>
       <div className="tournament-banner">
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <img src={logo} alt="706 Masters Pool" height="52" style={{ objectFit: "contain" }} />
+          <img src={logo} alt="706 Pool Play" height="52" style={{ objectFit: "contain" }} />
           <div>
-            <div className="banner-title">706 Masters Pool</div>
+            <div className="banner-title">706 Pool Play</div>
             <div className="banner-sub">
-              The Masters · Augusta National Golf Club · Apr 9–12, 2026
+              U.S. Open · Shinnecock Hills Golf Club ·  June 18–21, 2026
               {isLocked && (
                 <span className="badge badge-gold" style={{ marginLeft: "0.75rem" }}>
                   TEAMS LOCKED
@@ -219,7 +219,7 @@ export default function LeaderboardPage() {
 
       {teams.length === 0 ? (
         <div className="card empty-state">
-          <img src={logo} alt="706 Masters Pool" height="72" style={{ objectFit: "contain", marginBottom: "0.5rem" }} />
+          <img src={logo} alt="706 Pool Play" height="72" style={{ objectFit: "contain", marginBottom: "0.5rem" }} />
           <h3>No teams yet</h3>
           <p>Be the first to submit your lineup!</p>
         </div>

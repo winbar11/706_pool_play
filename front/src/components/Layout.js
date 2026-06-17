@@ -9,7 +9,7 @@ export default function Layout() {
     <div className="layout">
       <nav className="navbar">
         <Link to="/" className="navbar-brand">
-          <img src={logo} alt="706 Masters Pool" height="46" style={{ objectFit: "contain" }} />
+          <img src={logo} alt="706 Pool Play" height="46" style={{ objectFit: "contain" }} />
         </Link>
 
         <div className="navbar-nav">
@@ -48,8 +48,8 @@ export default function Layout() {
       </main>
 
       <footer className="site-footer">
-        <img src={logo} alt="706 Masters Pool" height="32" style={{ objectFit: "contain", opacity: 0.6 }} />
-        <span className="footer-text">706 Masters Pool · 2026</span>
+        <img src={logo} alt="706 Pool Play" height="32" style={{ objectFit: "contain", opacity: 0.6 }} />
+        <span className="footer-text">706 Pool Play</span>
       </footer>
     </div>
   );
