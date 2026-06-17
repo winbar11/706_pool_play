@@ -137,7 +137,7 @@ export default function WelcomePage() {
           <RuleRow icon="👥" label="Golfers per team"  value="Exactly 6 golfers" />
           <RuleRow icon="💰" label="Salary cap"        value="$50,000 total" />
           <RuleRow icon="👤" label="Entries per person" value="1 team per account" />
-          <RuleRow icon="🔒" label="Lock time"         value="Thu Apr 9 · 7:35 AM ET (First Tee Time @ 7:40 AM)" />
+          <RuleRow icon="🔒" label="Lock time"         value="Thursday AM - 7:30am EST" />
         </div>
       </div>
 
