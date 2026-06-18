@@ -157,7 +157,7 @@ GOLFER_SEED_DATA = [
         ("11250",   "Nicolai Højgaard",             6700,  33,  "DEN"),
         ("5408",    "Harris English",               6700,  22,  "USA"),
         ("1680",    "Jason Day",                    6700,  47,  "AUS"),
-        ("4901368", "Rickie Fowler",                6700,  41,  "USA"),
+        ("3702",    "Rickie Fowler",                6700,  41,  "USA"),
         ("5338",    "Bud Cauley",                   6600,  40,  "USA"),
         ("4419142", "Akshay Bhatia",                6600,  29,  "USA"),
         ("388",     "Adam Scott",                   6600,  49,  "AUS"),
