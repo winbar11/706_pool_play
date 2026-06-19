@@ -300,16 +300,22 @@ def _seed_golfers():
 
 
 def sync_golfer_rankings():
-    """Sync all seed fields (name, salary, world_rank, country) for existing golfers without touching teams."""
+    """Sync all seed fields (espn_id, name, salary, world_rank, country) for existing golfers without touching teams."""
     conn = get_conn()
     cur = conn.cursor()
     updated = 0
     for i, (espn_id, name, salary, rank, country) in enumerate(GOLFER_SEED_DATA):
         unique_espn = f"{espn_id}_{i}"
         cur.execute(
-            "UPDATE golfers SET name=%s, world_rank=%s, salary=%s, country=%s WHERE espn_id=%s",
-            (name, rank, salary, country, unique_espn)
+            "UPDATE golfers SET espn_id=%s, name=%s, world_rank=%s, salary=%s, country=%s WHERE espn_id=%s",
+            (unique_espn, name, rank, salary, country, unique_espn)
         )
+        if cur.rowcount == 0:
+            # espn_id changed in seed data — find by name and update espn_id too
+            cur.execute(
+                "UPDATE golfers SET espn_id=%s, name=%s, world_rank=%s, salary=%s, country=%s WHERE name=%s",
+                (unique_espn, name, rank, salary, country, name)
+            )
         updated += cur.rowcount
     conn.commit()
     cur.close()
