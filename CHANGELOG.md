@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
 ## Update + Added
+[0.0.16] - 2026.06.21
+- fixed UI bug to show correct live scoring
+
+## Update + Added
 [0.0.15] - 2026.05.04
 - 2026 U.S. Open field update
 - new US Open UI theme

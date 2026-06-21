@@ -20,8 +20,11 @@ function fmtRound(golfers, roundNum) {
     const isActiveRound = roundNum === g.current_round;
 
     if (isActiveRound) {
-      // Golfer is currently playing this round — always use live total_score
-      // so stale partial stroke counts are ignored
+      // CUT/WD players don't play rounds 3-4; skip them so they don't
+      // contribute a bogus score derived from their 2-round total.
+      if (g.made_cut === 0 && roundNum > 2) continue;
+      // Use live total_score minus completed-round totals to derive
+      // this round's running score-to-par.
       const prevRoundsPar = [1, 2, 3, 4]
         .filter(r => r < roundNum)
         .reduce((acc, r) => {
@@ -174,7 +177,7 @@ export default function LeaderboardPage() {
               {bonusShots < 0 && (
                 <div style={{ marginTop: "0.5rem", fontSize: "0.78rem", color: "var(--green-600)", paddingLeft: "0.25rem" }}>
                   ★ Bonus shots: {bonusShots}
-                  {team.golfers.some(g =>
+                  {isTournamentComplete && team.golfers.some(g =>
                     g.finish_position === 1 && g.made_cut === 1 && g.current_round >= 4
                   ) && " (includes −5 winner bonus)"}
                 </div>

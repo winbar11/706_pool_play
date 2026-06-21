@@ -942,9 +942,9 @@ body {
 }
 
 .round-pill.current {
-  background: rgba(200,146,42,0.12);
-  color: #7a5000;
-  border: 1px solid rgba(200,146,42,0.4);
+  background: rgba(185,28,28,0.10);
+  color: #b91c1c;
+  border: 1px solid rgba(185,28,28,0.35);
 }
 
 .round-pill.upcoming {
@@ -1099,9 +1099,9 @@ body {
   border-color: rgba(0,45,156,0.25);
 }
 [data-theme="us-open"] .round-pill.current {
-  background: rgba(184,137,42,0.10);
-  color: #6a4a00;
-  border-color: rgba(184,137,42,0.40);
+  background: rgba(185,28,28,0.10);
+  color: #b91c1c;
+  border-color: rgba(185,28,28,0.35);
 }
 
 /* ── Locked banner ── */
