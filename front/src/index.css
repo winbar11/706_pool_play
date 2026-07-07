@@ -24,6 +24,10 @@
   --gold-100: #fee2e2;
   --gold-50:  #fef2f2;
 
+  /* "Danger" red family (cut/error/delete indicators) — kept red by default,
+     overridden per-theme (e.g. gold for open-championship) */
+  --danger-rgb: 180,50,50;
+
   --white:     #ffffff;
   --off-white: #f8f6f0;
   --gray-100:  #e8e4da;
@@ -222,11 +226,11 @@ body {
 }
 
 .btn-danger {
-  background: rgba(180,50,50,0.08);
-  color: #b91c1c;
-  border: 1px solid rgba(180,50,50,0.3);
+  background: rgba(var(--danger-rgb),0.08);
+  color: var(--gold-200);
+  border: 1px solid rgba(var(--danger-rgb),0.3);
 }
-.btn-danger:hover:not(:disabled) { background: rgba(180,50,50,0.15); }
+.btn-danger:hover:not(:disabled) { background: rgba(var(--danger-rgb),0.15); }
 
 .btn-ghost {
   background: transparent;
@@ -249,13 +253,13 @@ body {
   margin-bottom: 1rem;
 }
 .alert-error {
-  background: rgba(180,50,50,0.08);
-  border: 1px solid rgba(180,50,50,0.3);
-  color: #b91c1c;
+  background: rgba(var(--danger-rgb),0.08);
+  border: 1px solid rgba(var(--danger-rgb),0.3);
+  color: var(--gold-200);
 }
 .alert-success {
-  background: rgba(26,61,32,0.08);
-  border: 1px solid rgba(26,61,32,0.3);
+  background: var(--green-50);
+  border: 1px solid var(--green-200);
   color: var(--green-700);
 }
 .alert-info {
@@ -501,8 +505,8 @@ body {
 }
 
 .chip-cut {
-  background: rgba(180,50,50,0.05);
-  border-color: rgba(180,50,50,0.2);
+  background: rgba(var(--danger-rgb),0.05);
+  border-color: rgba(var(--danger-rgb),0.2);
 }
 .chip-cut .chip-name { color: var(--gray-500); }
 
@@ -534,7 +538,7 @@ body {
 
 .salary-cap-fill.safe   { background: var(--green-400); }
 .salary-cap-fill.warn   { background: var(--gold-500); }
-.salary-cap-fill.over   { background: #dc2626; }
+.salary-cap-fill.over   { background: var(--gold-500); }
 
 .cap-numbers {
   display: flex;
@@ -545,7 +549,7 @@ body {
 }
 
 .cap-numbers .spent { color: var(--text-primary); font-weight: 600; }
-.cap-numbers .over-text { color: #dc2626; font-weight: 600; }
+.cap-numbers .over-text { color: var(--gold-500); font-weight: 600; }
 
 /* ── Golfer list ── */
 .golfer-search { margin-bottom: 1rem; }
@@ -697,7 +701,7 @@ body {
   border-radius: 4px;
   transition: color 0.15s;
 }
-.slot-remove:hover { color: #dc2626; }
+.slot-remove:hover { color: var(--gold-500); }
 
 .team-name-input { margin-bottom: 1rem; }
 
@@ -747,7 +751,7 @@ body {
 }
 
 .rpt.positive { color: var(--green-600); font-weight: 600; }
-.rpt.negative { color: #b91c1c; }
+.rpt.negative { color: var(--gold-200); }
 
 .my-golfer-total {
   font-family: var(--font-display);
@@ -764,14 +768,14 @@ body {
 }
 
 .my-golfer-cut {
-  border-color: rgba(180,50,50,0.2);
+  border-color: rgba(var(--danger-rgb),0.2);
   opacity: 0.7;
 }
 
 .cut-badge {
   font-size: 0.68rem;
-  background: rgba(180,50,50,0.1);
-  color: #b91c1c;
+  background: rgba(var(--danger-rgb),0.1);
+  color: var(--gold-200);
   border-radius: 4px;
   padding: 1px 5px;
   margin-left: 0.4rem;
@@ -875,9 +879,9 @@ body {
 }
 
 .badge-red {
-  background: rgba(180,50,50,0.08);
-  color: #b91c1c;
-  border: 1px solid rgba(180,50,50,0.25);
+  background: rgba(var(--danger-rgb),0.08);
+  color: var(--gold-200);
+  border: 1px solid rgba(var(--danger-rgb),0.25);
 }
 
 /* ── Locked banner ── */
@@ -1148,5 +1152,163 @@ body {
 
 /* ── Footer ── */
 [data-theme="us-open"] .site-footer {
+  border-top-color: var(--cream-dark);
+}
+
+/* ════════════════════════════════════════════════
+   THE OPEN CHAMPIONSHIP THEME
+   Navy blue and true gold
+   ════════════════════════════════════════════════ */
+
+[data-theme="open-championship"] {
+  /* Warm light backgrounds */
+  --cream:      #f5f0e8;
+  --cream-dark: #e5dcc8;
+
+  /* Navy blues replace forest greens */
+  --green-900: #000b1e;
+  --green-800: #001040;
+  --green-700: #00185a;
+  --green-600: #00205b;
+  --green-500: #0a2d75;
+  --green-400: #1a3d88;
+  --green-300: #3a60a8;
+  --green-200: #6a92cc;
+  --green-100: #aec4e8;
+  --green-50:  #e0eaf8;
+
+  /* True gold accent (not red) */
+  --gold-900: #3d2800;
+  --gold-700: #7a5200;
+  --gold-500: #c8a400;
+  --gold-400: #d4b000;
+  --gold-300: #c8a400;
+  --gold-200: #a08200;
+  --gold-100: #fff5c0;
+  --gold-50:  #fffae8;
+
+  /* No red anywhere in this theme — danger/cut indicators go gold too */
+  --danger-rgb: 200,164,0;
+
+  /* Text: navy tones */
+  --text-primary:   #001440;
+  --text-secondary: #00205b;
+  --text-muted:     #406090;
+
+  /* Shadows: navy-tinted */
+  --shadow-sm:   0 1px 4px rgba(0,20,64,0.10);
+  --shadow-md:   0 4px 16px rgba(0,20,64,0.13);
+  --shadow-lg:   0 8px 32px rgba(0,20,64,0.18);
+  --shadow-gold: 0 0 20px rgba(200,164,0,0.30);
+}
+
+/* ── Dark navy navbar with gold accent ── */
+[data-theme="open-championship"] .navbar {
+  background: #00205b;
+  border-bottom: 2px solid #c8a400;
+  box-shadow: 0 2px 8px rgba(0,32,91,0.25);
+}
+[data-theme="open-championship"] .navbar-brand .brand-text { color: #f5ead0; }
+[data-theme="open-championship"] .navbar-username           { color: #c8b880; }
+[data-theme="open-championship"] .nav-link                  { color: #e8d8a0; }
+[data-theme="open-championship"] .nav-link:hover {
+  color: #ffffff;
+  background: rgba(255,255,255,0.10);
+}
+[data-theme="open-championship"] .nav-link.active {
+  color: #f0d050;
+  background: rgba(200,164,0,0.20);
+  font-weight: 600;
+}
+
+/* Sign-out button in dark navbar */
+[data-theme="open-championship"] .btn-ghost {
+  border-color: rgba(200,164,0,0.50);
+  color: #e8d8a0;
+}
+[data-theme="open-championship"] .btn-ghost:hover:not(:disabled) {
+  background: rgba(200,164,0,0.15);
+  color: #ffffff;
+}
+
+/* ── Scrollbar ── */
+[data-theme="open-championship"] ::-webkit-scrollbar-thumb { background: #00205b; }
+
+/* ── Auth card: navy border ── */
+[data-theme="open-championship"] .auth-card { border-color: #1a3d88; }
+
+/* ── Form focus ring ── */
+[data-theme="open-championship"] .form-group input:focus,
+[data-theme="open-championship"] .form-group select:focus {
+  border-color: #00205b;
+  box-shadow: 0 0 0 3px rgba(0,32,91,0.15);
+}
+
+/* ── Leaderboard "my team" highlight: gold ── */
+[data-theme="open-championship"] .team-row-me {
+  background: rgba(200,164,0,0.10);
+  box-shadow: inset 3px 0 0 #c8a400;
+}
+[data-theme="open-championship"] .team-row-me:hover { background: rgba(200,164,0,0.18); }
+
+/* ── Tournament banner left accent ── */
+[data-theme="open-championship"] .tournament-banner { border-left-color: #00205b; }
+
+/* ── Round pills ── */
+[data-theme="open-championship"] .round-pill.complete {
+  background: rgba(0,32,91,0.09);
+  color: #001440;
+  border-color: rgba(0,32,91,0.25);
+}
+[data-theme="open-championship"] .round-pill.current {
+  background: rgba(200,164,0,0.12);
+  color: #7a5200;
+  border-color: rgba(200,164,0,0.40);
+}
+
+/* ── Locked banner ── */
+[data-theme="open-championship"] .locked-banner {
+  background: rgba(200,164,0,0.07);
+  border-color: rgba(200,164,0,0.30);
+  color: #5a3c00;
+}
+
+/* ── Badges ── */
+[data-theme="open-championship"] .badge-gold {
+  background: rgba(200,164,0,0.12);
+  color: #5a3c00;
+  border-color: rgba(200,164,0,0.40);
+}
+[data-theme="open-championship"] .badge-green {
+  background: rgba(0,32,91,0.09);
+  color: #00205b;
+  border-color: rgba(0,32,91,0.22);
+}
+
+/* ── Salary bar: navy fill ── */
+[data-theme="open-championship"] .salary-cap-fill.safe { background: #00205b; }
+
+/* ── Golfer row selection ── */
+[data-theme="open-championship"] .golfer-row:hover:not(.selected):not(.disabled) {
+  border-color: #1a3d88;
+}
+[data-theme="open-championship"] .golfer-row.selected {
+  background: rgba(0,32,91,0.06);
+  border-color: #00205b;
+}
+
+/* ── Roster slot ── */
+[data-theme="open-championship"] .roster-slot.filled {
+  border-color: #00205b;
+  background: rgba(0,32,91,0.04);
+}
+
+/* ── Admin section heading divider ── */
+[data-theme="open-championship"] .admin-section h3 {
+  border-bottom-color: var(--cream-dark);
+}
+
+/* ── Footer ── */
+[data-theme="open-championship"] .site-footer {
   border-top-color: var(--cream-dark);
 }

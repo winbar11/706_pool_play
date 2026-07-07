@@ -1,116 +1,75 @@
 import os
-import psycopg
-from psycopg.rows import dict_row
+from contextlib import contextmanager
+
+from sqlalchemy import create_engine, inspect, select, text
+from sqlalchemy.orm import sessionmaker
+
+from database.models import Base, Golfer
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
-def get_conn():
-    url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-    conn = psycopg.connect(url, row_factory=dict_row, sslmode="require")
-    return conn
+
+def _sqlalchemy_url(url: str) -> str:
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+psycopg://", 1)
+    elif url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return url
+
+
+PGSSLMODE = os.environ.get("PGSSLMODE", "prefer")
+
+engine = create_engine(_sqlalchemy_url(DATABASE_URL), connect_args={"sslmode": PGSSLMODE})
+SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
+
+
+@contextmanager
+def get_session():
+    session = SessionLocal()
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+def to_dict(obj) -> dict:
+    return {c.key: getattr(obj, c.key) for c in inspect(obj).mapper.column_attrs}
+
 
 def init_db():
-    conn = get_conn()
-    cur = conn.cursor()
+    Base.metadata.create_all(engine)
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id          SERIAL PRIMARY KEY,
-            username    TEXT UNIQUE NOT NULL,
-            email       TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            is_admin    INTEGER DEFAULT 0,
-            phone       TEXT,
-            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    # Add phone column to existing deployments that predate it
-    cur.execute("""
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT
-    """)
-    cur.execute("""
-        ALTER TABLE users ADD COLUMN IF NOT EXISTS paid INTEGER DEFAULT 0
-    """)
+    with engine.begin() as conn:
+        # Backward-compat statements for deployments that predate these columns/constraints
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS paid INTEGER DEFAULT 0"))
+        conn.execute(text("ALTER TABLE teams DROP CONSTRAINT IF EXISTS teams_user_id_key"))
+        conn.execute(text("ALTER TABLE teams ADD COLUMN IF NOT EXISTS final_score INTEGER DEFAULT 0"))
+        conn.execute(text("ALTER TABLE teams ADD COLUMN IF NOT EXISTS bonus_shots INTEGER DEFAULT 0"))
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS golfers (
-            id              SERIAL PRIMARY KEY,
-            espn_id         TEXT UNIQUE,
-            name            TEXT NOT NULL,
-            salary          INTEGER NOT NULL DEFAULT 0,
-            world_rank      INTEGER,
-            country         TEXT,
-            current_round   INTEGER DEFAULT 0,
-            round1_score    INTEGER,
-            round2_score    INTEGER,
-            round3_score    INTEGER,
-            round4_score    INTEGER,
-            total_score     INTEGER,
-            made_cut        INTEGER DEFAULT 1,
-            finish_position INTEGER,
-            solo_leader_r1  INTEGER DEFAULT 0,
-            solo_leader_r2  INTEGER DEFAULT 0,
-            solo_leader_r3  INTEGER DEFAULT 0,
-            solo_leader_r4  INTEGER DEFAULT 0
-        )
-    """)
+        conn.execute(text(
+            "INSERT INTO tournament_settings (key, value) VALUES ('teams_locked', '0') ON CONFLICT (key) DO NOTHING"
+        ))
+        conn.execute(text(
+            "INSERT INTO tournament_settings (key, value) VALUES ('current_round', '0') ON CONFLICT (key) DO NOTHING"
+        ))
+        conn.execute(text(
+            "INSERT INTO tournament_settings (key, value) VALUES ('tournament_year', '2026') ON CONFLICT (key) DO NOTHING"
+        ))
+        conn.execute(text(
+            "INSERT INTO tournament_settings (key, value) VALUES ('tournament_complete', '0') ON CONFLICT (key) DO NOTHING"
+        ))
+        conn.execute(text(
+            "INSERT INTO tournament_settings (key, value) VALUES ('pot_amount', '0') ON CONFLICT (key) DO NOTHING"
+        ))
+        conn.execute(text(
+            "INSERT INTO tournament_settings (key, value) VALUES ('theme', 'masters') ON CONFLICT (key) DO NOTHING"
+        ))
 
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS teams (
-            id          SERIAL PRIMARY KEY,
-            user_id     INTEGER NOT NULL REFERENCES users(id),
-            team_name   TEXT NOT NULL,
-            total_salary INTEGER NOT NULL,
-            final_score INTEGER DEFAULT 0,
-            bonus_shots INTEGER DEFAULT 0,
-            is_locked   INTEGER DEFAULT 0,
-            dk_total_points REAL DEFAULT 0,
-            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS team_golfers (
-            team_id     INTEGER NOT NULL REFERENCES teams(id),
-            golfer_id   INTEGER NOT NULL REFERENCES golfers(id),
-            PRIMARY KEY (team_id, golfer_id)
-        )
-    """)
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS tournament_settings (
-            key   TEXT PRIMARY KEY,
-            value TEXT
-        )
-    """)
-
-    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('teams_locked', '0') ON CONFLICT (key) DO NOTHING")
-    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('current_round', '0') ON CONFLICT (key) DO NOTHING")
-    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('tournament_year', '2026') ON CONFLICT (key) DO NOTHING")
-    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('tournament_complete', '0') ON CONFLICT (key) DO NOTHING")
-    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('pot_amount', '0') ON CONFLICT (key) DO NOTHING")
-    cur.execute("INSERT INTO tournament_settings (key, value) VALUES ('theme', 'masters') ON CONFLICT (key) DO NOTHING")
-
-    # Allow multiple teams per user (removes the old single-team constraint)
-    cur.execute("ALTER TABLE teams DROP CONSTRAINT IF EXISTS teams_user_id_key")
-
-    # Add scoring columns missing from original schema
-    cur.execute("ALTER TABLE teams ADD COLUMN IF NOT EXISTS final_score INTEGER DEFAULT 0")
-    cur.execute("ALTER TABLE teams ADD COLUMN IF NOT EXISTS bonus_shots INTEGER DEFAULT 0")
-
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS password_reset_tokens (
-            token       TEXT PRIMARY KEY,
-            user_id     INTEGER NOT NULL REFERENCES users(id),
-            expires_at  TIMESTAMP NOT NULL,
-            used        INTEGER DEFAULT 0,
-            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
-    conn.commit()
-    cur.close()
-    conn.close()
     _seed_golfers()
 
 
@@ -278,46 +237,43 @@ GOLFER_SEED_DATA = [
 
 def _seed_golfers():
     """Seed golfers only if the table is empty."""
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT COUNT(*) as n FROM golfers")
-    count = cur.fetchone()["n"]
-    if count > 0:
-        cur.close()
-        conn.close()
-        return
+    with get_session() as session:
+        count = session.query(Golfer).count()
+        if count > 0:
+            return
 
-    for i, (espn_id, name, salary, rank, country) in enumerate(GOLFER_SEED_DATA):
-        unique_espn = f"{espn_id}_{i}"
-        cur.execute("""
-            INSERT INTO golfers (espn_id, name, salary, world_rank, country)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (unique_espn, name, salary, rank, country))
-
-    conn.commit()
-    cur.close()
-    conn.close()
+        for i, (espn_id, name, salary, rank, country) in enumerate(GOLFER_SEED_DATA):
+            unique_espn = f"{espn_id}_{i}"
+            session.add(Golfer(
+                espn_id=unique_espn, name=name, salary=salary,
+                world_rank=rank, country=country,
+            ))
 
 
 def sync_golfer_rankings():
     """Sync all seed fields (espn_id, name, salary, world_rank, country) for existing golfers without touching teams."""
-    conn = get_conn()
-    cur = conn.cursor()
     updated = 0
-    for i, (espn_id, name, salary, rank, country) in enumerate(GOLFER_SEED_DATA):
-        unique_espn = f"{espn_id}_{i}"
-        cur.execute(
-            "UPDATE golfers SET espn_id=%s, name=%s, world_rank=%s, salary=%s, country=%s WHERE espn_id=%s",
-            (unique_espn, name, rank, salary, country, unique_espn)
-        )
-        if cur.rowcount == 0:
-            # espn_id changed in seed data — find by name and update espn_id too
-            cur.execute(
-                "UPDATE golfers SET espn_id=%s, name=%s, world_rank=%s, salary=%s, country=%s WHERE name=%s",
-                (unique_espn, name, rank, salary, country, name)
-            )
-        updated += cur.rowcount
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        for i, (espn_id, name, salary, rank, country) in enumerate(GOLFER_SEED_DATA):
+            unique_espn = f"{espn_id}_{i}"
+            golfer = session.execute(
+                select(Golfer).where(Golfer.espn_id == unique_espn)
+            ).scalar_one_or_none()
+
+            if golfer is None:
+                # espn_id changed in seed data — find by name and update espn_id too
+                golfer = session.execute(
+                    select(Golfer).where(Golfer.name == name)
+                ).scalar_one_or_none()
+
+            if golfer is None:
+                continue
+
+            golfer.espn_id = unique_espn
+            golfer.name = name
+            golfer.world_rank = rank
+            golfer.salary = salary
+            golfer.country = country
+            updated += 1
+
     return updated

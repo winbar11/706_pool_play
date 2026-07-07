@@ -113,7 +113,7 @@ export default function LeaderboardPage() {
           </td>
           <td className="dk-points" style={{
             color: finalScore !== null && finalScore < 0
-              ? "#b91c1c"
+              ? "var(--gold-200)"
               : finalScore !== null && finalScore > 0
               ? "var(--green-600)"
               : "var(--text-muted)"

@@ -4,7 +4,9 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
-from database.db import get_conn
+from sqlalchemy import func, select
+from database.db import get_session
+from database.models import PasswordResetToken, User
 from utils.auth_utils import hash_password, verify_password, create_token, send_reset_email
 from dependencies import get_current_user
 
@@ -35,53 +37,45 @@ def register(req: RegisterRequest):
     if len(req.username) < 3:
         raise HTTPException(400, "Username must be at least 3 characters")
 
-    conn = get_conn()
-    cur = conn.cursor()
+    username = req.username.lower()
+    email = req.email.lower()
 
-    cur.execute(
-        "SELECT id FROM users WHERE username=%s OR email=%s",
-        (req.username.lower(), req.email.lower())
-    )
-    existing = cur.fetchone()
-    if existing:
-        cur.close()
-        conn.close()
-        raise HTTPException(400, "Username or email already taken")
+    with get_session() as session:
+        existing = session.execute(
+            select(User).where((User.username == username) | (User.email == email))
+        ).scalar_one_or_none()
+        if existing:
+            raise HTTPException(400, "Username or email already taken")
 
-    pw_hash = hash_password(req.password)
+        pw_hash = hash_password(req.password)
+        count = session.query(User).count()
+        is_admin = 1 if count == 0 else 0
 
-    cur.execute("SELECT COUNT(*) as n FROM users")
-    count = cur.fetchone()["n"]
-    is_admin = 1 if count == 0 else 0
+        user = User(
+            username=username, email=email, password_hash=pw_hash,
+            is_admin=is_admin, phone=req.phone,
+        )
+        session.add(user)
+        session.flush()
+        user_id = user.id
 
-    cur.execute(
-        "INSERT INTO users (username, email, password_hash, is_admin, phone) VALUES (%s,%s,%s,%s,%s) RETURNING id",
-        (req.username.lower(), req.email.lower(), pw_hash, is_admin, req.phone)
-    )
-    user_id = cur.fetchone()["id"]
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    token = create_token(user_id, req.username.lower(), bool(is_admin))
-    return {"token": token, "username": req.username.lower(),
+    token = create_token(user_id, username, bool(is_admin))
+    return {"token": token, "username": username,
             "is_admin": bool(is_admin), "user_id": user_id}
 
 @router.post("/login")
 def login(req: LoginRequest):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM users WHERE username=%s", (req.username.lower(),))
-    user = cur.fetchone()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        user = session.execute(
+            select(User).where(User.username == req.username.lower())
+        ).scalar_one_or_none()
 
-    if not user or not verify_password(req.password, user["password_hash"]):
-        raise HTTPException(401, "Invalid username or password")
+        if not user or not verify_password(req.password, user.password_hash):
+            raise HTTPException(401, "Invalid username or password")
 
-    token = create_token(user["id"], user["username"], bool(user["is_admin"]))
-    return {"token": token, "username": user["username"],
-            "is_admin": bool(user["is_admin"]), "user_id": user["id"]}
+        token = create_token(user.id, user.username, bool(user.is_admin))
+        return {"token": token, "username": user.username,
+                "is_admin": bool(user.is_admin), "user_id": user.id}
 
 @router.get("/me")
 def me(authorization: str = Header(None)):
@@ -91,33 +85,31 @@ def me(authorization: str = Header(None)):
 
 @router.post("/forgot-password")
 def forgot_password(req: ForgotPasswordRequest):
-    conn = get_conn()
-    cur = conn.cursor()
+    with get_session() as session:
+        user = session.execute(
+            select(User).where(User.email == req.email.lower().strip())
+        ).scalar_one_or_none()
 
-    cur.execute("SELECT id, email FROM users WHERE email=%s", (req.email.lower().strip(),))
-    user = cur.fetchone()
+        if user:
+            token = secrets.token_urlsafe(32)
+            expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
 
-    if user:
-        token = secrets.token_urlsafe(32)
-        expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+            for old_token in session.execute(
+                select(PasswordResetToken).where(
+                    PasswordResetToken.user_id == user.id,
+                    PasswordResetToken.used == 0,
+                )
+            ).scalars():
+                old_token.used = 1
 
-        cur.execute(
-            "UPDATE password_reset_tokens SET used=1 WHERE user_id=%s AND used=0",
-            (user["id"],)
-        )
-        cur.execute(
-            "INSERT INTO password_reset_tokens (token, user_id, expires_at) VALUES (%s, %s, %s)",
-            (token, user["id"], expires_at)
-        )
-        conn.commit()
+            session.add(PasswordResetToken(token=token, user_id=user.id, expires_at=expires_at))
+            session.flush()
 
-        try:
-            send_reset_email(user["email"], token)
-        except Exception as e:
-            logger.error("Reset email failed for user %s: %s", user["id"], e)
+            try:
+                send_reset_email(user.email, token)
+            except Exception as e:
+                logger.error("Reset email failed for user %s: %s", user.id, e)
 
-    cur.close()
-    conn.close()
     # Always return the same message to prevent email enumeration
     return {"message": "If that email is registered, a reset link has been sent."}
 
@@ -126,25 +118,20 @@ def reset_password(req: ResetPasswordRequest):
     if len(req.password) < 6:
         raise HTTPException(400, "Password must be at least 6 characters")
 
-    conn = get_conn()
-    cur = conn.cursor()
+    with get_session() as session:
+        row = session.execute(
+            select(PasswordResetToken).where(
+                PasswordResetToken.token == req.token,
+                PasswordResetToken.used == 0,
+                PasswordResetToken.expires_at > func.now(),
+            )
+        ).scalar_one_or_none()
 
-    cur.execute("""
-        SELECT user_id FROM password_reset_tokens
-        WHERE token=%s AND used=0 AND expires_at > NOW()
-    """, (req.token,))
-    row = cur.fetchone()
+        if not row:
+            raise HTTPException(400, "Reset link is invalid or has expired")
 
-    if not row:
-        cur.close()
-        conn.close()
-        raise HTTPException(400, "Reset link is invalid or has expired")
+        user = session.get(User, row.user_id)
+        user.password_hash = hash_password(req.password)
+        row.used = 1
 
-    pw_hash = hash_password(req.password)
-    cur.execute("UPDATE users SET password_hash=%s WHERE id=%s", (pw_hash, row["user_id"]))
-    cur.execute("UPDATE password_reset_tokens SET used=1 WHERE token=%s", (req.token,))
-    conn.commit()
-
-    cur.close()
-    conn.close()
     return {"message": "Password updated successfully. You can now log in."}

@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from typing import List
-from database.db import get_conn, _seed_golfers, sync_golfer_rankings
+from sqlalchemy import delete, update
+from database.db import get_session, to_dict, _seed_golfers, sync_golfer_rankings
+from database.models import Golfer, Team, TournamentSetting, User, team_golfers
 from dependencies import get_admin_user
 from scoring.scoring import calc_golfer_score, calc_all_team_scores
 from scheduler.scheduler import refresh_scores
@@ -12,23 +14,15 @@ router = APIRouter()
 @router.post("/lock-teams")
 def lock_teams(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE tournament_settings SET value='1' WHERE key='teams_locked'")
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        session.get(TournamentSetting, "teams_locked").value = "1"
     return {"message": "Teams locked. No more changes allowed."}
 
 @router.post("/unlock-teams")
 def unlock_teams(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE tournament_settings SET value='0' WHERE key='teams_locked'")
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        session.get(TournamentSetting, "teams_locked").value = "0"
     return {"message": "Teams unlocked."}
 
 @router.post("/refresh-scores")
@@ -52,115 +46,76 @@ def manual_update_golfer(req: ManualGolferUpdate, authorization: str = Header(No
     then recalculates all team final scores.
     """
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
 
-    cur.execute("SELECT * FROM golfers WHERE id=%s", (req.golfer_id,))
-    golfer = cur.fetchone()
-    if not golfer:
-        cur.close()
-        conn.close()
-        raise HTTPException(404, "Golfer not found")
+    with get_session() as session:
+        golfer = session.get(Golfer, req.golfer_id)
+        if not golfer:
+            raise HTTPException(404, "Golfer not found")
 
-    r = req.round_num
+        r = req.round_num
 
-    # Build update fields
-    updates = {}
-    if req.round_score is not None:
-        updates[f"round{r}_score"] = req.round_score
-    if req.total_score is not None:
-        updates["total_score"]     = req.total_score
-        updates["current_round"]   = r
-    if req.finish_position is not None:
-        updates["finish_position"] = req.finish_position
-    updates["made_cut"] = req.made_cut
+        # Build update fields
+        updates = {}
+        if req.round_score is not None:
+            updates[f"round{r}_score"] = req.round_score
+        if req.total_score is not None:
+            updates["total_score"]   = req.total_score
+            updates["current_round"] = r
+        if req.finish_position is not None:
+            updates["finish_position"] = req.finish_position
+        updates["made_cut"] = req.made_cut
 
-    if updates:
-        set_clause = ", ".join(f"{k}=%s" for k in updates)
-        cur.execute(
-            f"UPDATE golfers SET {set_clause} WHERE id=%s",
-            (*updates.values(), req.golfer_id)
-        )
+        for k, v in updates.items():
+            setattr(golfer, k, v)
 
-    # Recalculate all team scores
-    cur.execute("""
-        SELECT t.*, u.username FROM teams t
-        JOIN users u ON u.id = t.user_id
-    """)
-    teams_raw = cur.fetchall()
-    all_teams = []
-    for team in teams_raw:
-        team_dict = dict(team)
-        cur.execute("""
-            SELECT g.* FROM golfers g
-            JOIN team_golfers tg ON tg.golfer_id = g.id
-            WHERE tg.team_id = %s
-        """, (team_dict["id"],))
-        team_dict["golfers"] = [dict(g) for g in cur.fetchall()]
-        all_teams.append(team_dict)
+        # Recalculate all team scores
+        teams = session.query(Team).all()
+        all_teams = [
+            {**to_dict(team), "golfers": [to_dict(g) for g in team.golfers]}
+            for team in teams
+        ]
 
-    cur.execute("SELECT value FROM tournament_settings WHERE key='tournament_complete'")
-    tc_row = cur.fetchone()
-    tournament_complete = tc_row is not None and tc_row["value"] == "1"
+        tc_row = session.get(TournamentSetting, "tournament_complete")
+        tournament_complete = tc_row is not None and tc_row.value == "1"
 
-    scores = calc_all_team_scores(all_teams, tournament_complete)
-    for team_id, result in scores.items():
-        cur.execute("""
-            UPDATE teams SET final_score=%s, bonus_shots=%s, dk_total_points=%s
-            WHERE id=%s
-        """, (result["final"], result["bonus"], result["final"], team_id))
+        scores = calc_all_team_scores(all_teams, tournament_complete)
+        for team_id, result in scores.items():
+            team = session.get(Team, team_id)
+            team.final_score = result["final"]
+            team.bonus_shots = result["bonus"]
+            team.dk_total_points = result["final"]
 
-    conn.commit()
-    cur.close()
-    conn.close()
     return {"message": f"Golfer updated and team scores recalculated"}
 
 @router.get("/users")
 def list_users(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT id, username, email, phone, is_admin, paid, created_at FROM users ORDER BY created_at")
-    users = cur.fetchall()
-    cur.close()
-    conn.close()
-    return {"users": [dict(u) for u in users]}
+    with get_session() as session:
+        users = session.query(User).order_by(User.created_at).all()
+        fields = ["id", "username", "email", "phone", "is_admin", "paid", "created_at"]
+        return {"users": [{f: getattr(u, f) for f in fields} for u in users]}
 
 @router.post("/set-paid")
 def set_paid(user_id: int, paid: bool, authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET paid=%s WHERE id=%s", (1 if paid else 0, user_id))
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        user = session.get(User, user_id)
+        if user:
+            user.paid = 1 if paid else 0
     return {"message": "Paid status updated"}
 
 @router.post("/set-round")
 def set_round(round_num: int, authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE tournament_settings SET value=%s WHERE key='current_round'",
-                (str(round_num),))
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        session.get(TournamentSetting, "current_round").value = str(round_num)
     return {"message": f"Current round set to {round_num}"}
 
 @router.post("/set-tournament-complete")
 def set_tournament_complete(complete: bool, authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute(
-        "UPDATE tournament_settings SET value=%s WHERE key='tournament_complete'",
-        ("1" if complete else "0",)
-    )
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        session.get(TournamentSetting, "tournament_complete").value = "1" if complete else "0"
     return {"message": "Tournament marked complete." if complete else "Tournament marked in-progress."}
 
 class DeleteTeamsRequest(BaseModel):
@@ -171,27 +126,18 @@ def delete_teams(req: DeleteTeamsRequest, authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
     if not req.team_ids:
         raise HTTPException(400, "No team IDs provided")
-    conn = get_conn()
-    cur = conn.cursor()
-    placeholders = ",".join(["%s"] * len(req.team_ids))
-    cur.execute(f"DELETE FROM team_golfers WHERE team_id IN ({placeholders})", req.team_ids)
-    cur.execute(f"DELETE FROM teams WHERE id IN ({placeholders})", req.team_ids)
-    deleted = cur.rowcount
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        session.execute(delete(team_golfers).where(team_golfers.c.team_id.in_(req.team_ids)))
+        result = session.execute(delete(Team).where(Team.id.in_(req.team_ids)))
+        deleted = result.rowcount
     return {"message": f"{deleted} team(s) deleted successfully", "deleted_count": deleted}
 
 @router.post("/clear-teams")
 def clear_teams(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM team_golfers")
-    cur.execute("DELETE FROM teams")
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        session.execute(delete(team_golfers))
+        session.execute(delete(Team))
     return {"message": "All teams cleared successfully"}
 
 @router.post("/sync-rankings")
@@ -205,63 +151,46 @@ def sync_rankings(authorization: str = Header(None)):
 def reset_golfers(authorization: str = Header(None)):
     """Wipe the golfer field and all teams, then re-seed from db.py."""
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM team_golfers")
-    cur.execute("DELETE FROM teams")
-    cur.execute("DELETE FROM golfers")
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        session.execute(delete(team_golfers))
+        session.execute(delete(Team))
+        session.execute(delete(Golfer))
     _seed_golfers()
     return {"message": "Golfer field reset and re-seeded. All teams cleared."}
 
 @router.post("/set-theme")
 def set_theme(theme: str, authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    if theme not in ("masters", "us-open"):
-        raise HTTPException(400, "Invalid theme. Must be 'masters' or 'us-open'")
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE tournament_settings SET value=%s WHERE key='theme'", (theme,))
-    conn.commit()
-    cur.close()
-    conn.close()
+    if theme not in ("masters", "us-open", "open-championship"):
+        raise HTTPException(400, "Invalid theme. Must be 'masters', 'us-open', or 'open-championship'")
+    with get_session() as session:
+        session.get(TournamentSetting, "theme").value = theme
     return {"message": f"Theme set to {theme}", "theme": theme}
 
 @router.post("/set-pot")
 def set_pot(amount: int, authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("UPDATE tournament_settings SET value=%s WHERE key='pot_amount'", (str(amount),))
-    conn.commit()
-    cur.close()
-    conn.close()
+    with get_session() as session:
+        session.get(TournamentSetting, "pot_amount").value = str(amount)
     return {"message": f"Pot amount set to ${amount}"}
 
 @router.post("/clear-scores")
 def clear_scores(authorization: str = Header(None)):
     get_admin_user(authorization=authorization)
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        UPDATE golfers SET
+    with get_session() as session:
+        session.execute(update(Golfer).values(
             current_round=0,
-            total_score=NULL,
+            total_score=None,
             made_cut=1,
-            finish_position=NULL,
-            round1_score=NULL,
-            round2_score=NULL,
-            round3_score=NULL,
-            round4_score=NULL,
+            finish_position=None,
+            round1_score=None,
+            round2_score=None,
+            round3_score=None,
+            round4_score=None,
             solo_leader_r1=0,
             solo_leader_r2=0,
             solo_leader_r3=0,
-            solo_leader_r4=0
-    """)
-    cur.execute("UPDATE teams SET final_score=0, bonus_shots=0, dk_total_points=0")
-    conn.commit()
-    cur.close()
-    conn.close()
+            solo_leader_r4=0,
+        ))
+        session.execute(update(Team).values(final_score=0, bonus_shots=0, dk_total_points=0))
     return {"message": "All scores cleared successfully"}

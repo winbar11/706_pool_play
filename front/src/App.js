@@ -29,7 +29,11 @@ function ThemeSync() {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", theme === "us-open" ? "#002855" : "#0a1f0a");
+    if (meta) meta.setAttribute("content",
+      theme === "us-open" ? "#002855" :
+      theme === "open-championship" ? "#00205b" :
+      "#0a1f0a"
+    );
   }, [data]);
   return null;
 }

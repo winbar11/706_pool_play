@@ -78,7 +78,7 @@ export default function MyTeamPage() {
               <div className="stat-card">
                 <div className="stat-value" style={{
                   color: finalScore !== null && finalScore < 0 ? "var(--green-600)"
-                        : finalScore !== null && finalScore > 0 ? "#b91c1c"
+                        : finalScore !== null && finalScore > 0 ? "var(--gold-200)"
                         : "var(--text-primary)"
                 }}>
                   {fmtScore(finalScore)}
@@ -171,7 +171,7 @@ export default function MyTeamPage() {
                       <div>
                         <div className="my-golfer-total" style={{
                           color: displayScore !== null && displayScore < 0 ? "var(--green-600)"
-                                : displayScore !== null && displayScore > 0 ? "#b91c1c"
+                                : displayScore !== null && displayScore > 0 ? "var(--gold-200)"
                                 : "var(--text-primary)"
                         }}>
                           {fmtScore(displayScore)}

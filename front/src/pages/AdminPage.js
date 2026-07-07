@@ -118,7 +118,8 @@ export default function AdminPage() {
       // Apply immediately in this browser too
       document.documentElement.setAttribute("data-theme", data.theme);
       localStorage.setItem("theme", data.theme);
-      notify(`Theme set to ${data.theme === "us-open" ? "US Open" : "Masters"}.`);
+      const label = data.theme === "us-open" ? "US Open" : data.theme === "open-championship" ? "The Open Championship" : "Masters";
+      notify(`Theme set to ${label}.`);
     },
     onError: (e) => fail(e.message),
   });
@@ -224,7 +225,7 @@ export default function AdminPage() {
           </div>
 
           <hr className="divider" />
-          <h3 style={{ color: "#b91c1c" }}>⚠️ Danger Zone</h3>
+          <h3 style={{ color: "var(--gold-200)" }}>⚠️ Danger Zone</h3>
           <div className="admin-btn-group">
             <button
               className="btn btn-danger"
@@ -404,6 +405,24 @@ export default function AdminPage() {
                 <span style={{
                   marginLeft: "0.5rem", fontSize: "0.72rem",
                   background: "rgba(255,255,255,0.15)", borderRadius: "4px", padding: "1px 5px"
+                }}>Active</span>
+              )}
+            </button>
+            <button
+              className={`btn ${currentTheme === "open-championship" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => themeMut.mutate("open-championship")}
+              disabled={themeMut.isPending || currentTheme === "open-championship"}
+              style={{
+                flex: 1, minWidth: "120px",
+                ...(currentTheme === "open-championship" ? { background: "#00205b", color: "#f0d050" } : {})
+              }}
+            >
+              <span style={{ marginRight: "0.4rem" }}>🏆</span>
+              The Open
+              {currentTheme === "open-championship" && (
+                <span style={{
+                  marginLeft: "0.5rem", fontSize: "0.72rem",
+                  background: "rgba(200,164,0,0.25)", borderRadius: "4px", padding: "1px 5px"
                 }}>Active</span>
               )}
             </button>

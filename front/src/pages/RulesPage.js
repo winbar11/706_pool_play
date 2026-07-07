@@ -181,7 +181,7 @@ export default function RulesPage() {
                   padding: "0.6rem 0.75rem",
                   textAlign: "center",
                   fontWeight: 600,
-                  color: positive ? "#b91c1c" : "var(--green-600)",
+                  color: positive ? "var(--gold-200)" : "var(--green-600)",
                 }}>{adj}</td>
                 <td style={{ padding: "0.6rem 0.75rem", color: "var(--text-muted)", fontSize: "0.85rem" }}>{cond}</td>
               </tr>
@@ -227,9 +227,9 @@ function PenaltyRow({ label, value, description }) {
       gap: "1rem",
       alignItems: "flex-start",
       padding: "0.875rem 1rem",
-      background: "#fef2f2",
+      background: "var(--gold-50)",
       borderRadius: "var(--radius-md)",
-      borderLeft: "3px solid #b91c1c",
+      borderLeft: "3px solid var(--gold-200)",
     }}>
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 600, marginBottom: "0.25rem" }}>{label}</div>
@@ -238,7 +238,7 @@ function PenaltyRow({ label, value, description }) {
       <div style={{
         fontWeight: 700,
         fontSize: "1.1rem",
-        color: "#b91c1c",
+        color: "var(--gold-200)",
         whiteSpace: "nowrap",
         minWidth: "70px",
         textAlign: "right",
