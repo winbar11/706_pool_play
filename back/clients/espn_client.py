@@ -9,8 +9,8 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# US Open - 2026
-TOURNEY_ID    = "401811952"
+# The Open Championship - 2026
+TOURNEY_ID    = "401811957"
 
 LEADERBOARD_URL = f"https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?event={TOURNEY_ID}"
 
