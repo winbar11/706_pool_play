@@ -34,6 +34,11 @@ function ThemeSync() {
       theme === "open-championship" ? "#00205b" :
       "#0a1f0a"
     );
+    const iconHref = theme === "open-championship"
+      ? `${process.env.PUBLIC_URL}/favicon-open-championship.png`
+      : `${process.env.PUBLIC_URL}/favicon.png`;
+    document.querySelectorAll('link[rel="icon"], link[rel="apple-touch-icon"]')
+      .forEach((link) => link.setAttribute("href", iconHref));
   }, [data]);
   return null;
 }

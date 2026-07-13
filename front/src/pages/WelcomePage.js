@@ -2,10 +2,14 @@ import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../utils/api.js";
+import { useTheme } from "../hooks/useTheme.js";
 import logo from "../static/usa706.webp";
+import logoOpenChampionship from "../static/usa706-open-championship.png";
 
 export default function WelcomePage() {
   const { user } = useAuth() ?? {};
+  const theme = useTheme();
+  const logoSrc = theme === "open-championship" ? logoOpenChampionship : logo;
   const [pot, setPot] = useState(null);
   const [potInput, setPotInput] = useState("");
   const [potEditing, setPotEditing] = useState(false);
@@ -35,10 +39,10 @@ export default function WelcomePage() {
   return (
     <div>
       <div className="page-header" style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        <img src={logo} alt="706 Pool Play" height="64" style={{ objectFit: "contain", flexShrink: 0 }} />
+        <img src={logoSrc} alt="706 Pool Play" height="64" style={{ objectFit: "contain", flexShrink: 0 }} />
         <div>
           <h1>How to Enter</h1>
-          <p>U.S. Open &mdash; June 18–21, 2026</p>
+          <p>The Open Championship &mdash; July 16–19, 2026</p>
         </div>
       </div>
 

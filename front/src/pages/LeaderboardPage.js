@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../utils/api.js";
 import { useAuth } from "../context/AuthContext.js";
+import { useTheme } from "../hooks/useTheme.js";
 import logo from "../static/usa706.webp";
+import logoOpenChampionship from "../static/usa706-open-championship.png";
 
 function fmtScore(score) {
   if (score === null || score === undefined) return "—";
@@ -64,6 +66,8 @@ function RoundPills({ current }) {
 
 export default function LeaderboardPage() {
   const { user } = useAuth();
+  const theme = useTheme();
+  const logoSrc = theme === "open-championship" ? logoOpenChampionship : logo;
   const [expanded, setExpanded] = useState(null);
   const [showAll, setShowAll] = useState(false);
 
@@ -197,11 +201,11 @@ export default function LeaderboardPage() {
     <div>
       <div className="tournament-banner">
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <img src={logo} alt="706 Pool Play" height="52" style={{ objectFit: "contain" }} />
+          <img src={logoSrc} alt="706 Pool Play" height="52" style={{ objectFit: "contain" }} />
           <div>
             <div className="banner-title">706 Pool Play</div>
             <div className="banner-sub">
-              U.S. Open · Shinnecock Hills Golf Club ·  June 18–21, 2026
+              The Open Championship · Royal Birkdale Golf Club ·  July 16–19, 2026
               {isLocked && (
                 <span className="badge badge-gold" style={{ marginLeft: "0.75rem" }}>
                   TEAMS LOCKED
@@ -222,7 +226,7 @@ export default function LeaderboardPage() {
 
       {teams.length === 0 ? (
         <div className="card empty-state">
-          <img src={logo} alt="706 Pool Play" height="72" style={{ objectFit: "contain", marginBottom: "0.5rem" }} />
+          <img src={logoSrc} alt="706 Pool Play" height="72" style={{ objectFit: "contain", marginBottom: "0.5rem" }} />
           <h3>No teams yet</h3>
           <p>Be the first to submit your lineup!</p>
         </div>

@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../hooks/useTheme.js";
 import logo from "../static/usa706.webp";
+import logoOpenChampionship from "../static/usa706-open-championship.png";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const logoSrc = theme === "open-championship" ? logoOpenChampionship : logo;
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +34,7 @@ export default function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <img src={logo} alt="706 Pool Play" height="150" style={{ objectFit: "contain" }} />
+          <img src={logoSrc} alt="706 Pool Play" height="150" style={{ objectFit: "contain" }} />
         </div>
 
         <h2>Sign in</h2>

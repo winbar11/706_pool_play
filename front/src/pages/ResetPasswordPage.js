@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../utils/api";
+import { useTheme } from "../hooks/useTheme.js";
 import logo from "../static/usa706.webp";
+import logoOpenChampionship from "../static/usa706-open-championship.png";
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
+  const theme = useTheme();
+  const logoSrc = theme === "open-championship" ? logoOpenChampionship : logo;
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -39,7 +43,7 @@ export default function ResetPasswordPage() {
     <div className="auth-page">
       <div className="auth-card">
         <div className="auth-logo">
-          <img src={logo} alt="706 Pool Play" height="150" style={{ objectFit: "contain" }} />
+          <img src={logoSrc} alt="706 Pool Play" height="150" style={{ objectFit: "contain" }} />
         </div>
 
         <h2>Choose New Password</h2>

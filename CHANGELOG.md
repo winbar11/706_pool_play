@@ -7,6 +7,7 @@ The format is based on Keep a Changelog and this project adheres to Semantic Ver
 [0.1.0] - 2026.07.07
 - updated to SQLAlchemy for database actions
 - added The Open Championship theme
+  - created new logos for The Open Championship
 - updated player field to '26 Open Championship field
 - fixed minor visual bugs
 
