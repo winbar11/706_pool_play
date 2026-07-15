@@ -10,7 +10,14 @@ import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-SECRET_KEY = os.environ.get("SECRET_KEY", secrets.token_hex(32))
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "SECRET_KEY environment variable is not set. A random key must never be "
+        "generated as a fallback — every process restart or extra worker would get "
+        "a different key, silently invalidating all issued tokens and rejecting "
+        "tokens issued by other instances."
+    )
 TOKEN_EXPIRE_SECONDS = 60 * 60 * 24 * 7  # 7 days
 
 logger = logging.getLogger(__name__)
