@@ -22,6 +22,27 @@ def normalize_name(name: str) -> str:
         if unicodedata.category(c) != 'Mn'
     ).lower()
 
+def _unique_match(session, stmt, stage: str, player_name: str):
+    """Return the golfer matched by stmt only if exactly one row matches.
+
+    Silently picking .first() among ambiguous matches (e.g. two golfers whose
+    names both contain a common substring) risks attributing one golfer's
+    score to another, which corrupts a real-money payout with no visibility.
+    Ambiguous or zero matches are logged loudly and skipped instead.
+    """
+    rows = session.execute(stmt).scalars().all()
+    if len(rows) == 1:
+        return rows[0]
+    if len(rows) > 1:
+        candidates = ", ".join(f"{g.id}:{g.name}" for g in rows)
+        logger.error(
+            f"Ambiguous {stage} match for ESPN player '{player_name}' — "
+            f"{len(rows)} candidates ({candidates}). Skipping this update to "
+            "avoid mis-attributing a score."
+        )
+    return None
+
+
 async def refresh_scores():
     logger.info("=== Starting score refresh ===")
     try:
@@ -45,22 +66,25 @@ async def refresh_scores():
                 name    = player["name"]
 
                 # Try ESPN ID first
-                golfer = session.execute(
-                    select(Golfer).where(Golfer.espn_id.like(f"{espn_id}%"))
-                ).scalars().first()
+                golfer = _unique_match(
+                    session, select(Golfer).where(Golfer.espn_id.like(f"{espn_id}%")),
+                    "espn_id", name,
+                )
 
                 # Try exact name
                 if not golfer:
-                    golfer = session.execute(
-                        select(Golfer).where(Golfer.name.like(f"%{name}%"))
-                    ).scalars().first()
+                    golfer = _unique_match(
+                        session, select(Golfer).where(Golfer.name.like(f"%{name}%")),
+                        "name", name,
+                    )
 
                 # Try normalized name (strips accents like ø, é, å)
                 if not golfer:
                     normalized = normalize_name(name)
-                    golfer = session.execute(
-                        select(Golfer).where(Golfer.name.ilike(f"%{normalized}%"))
-                    ).scalars().first()
+                    golfer = _unique_match(
+                        session, select(Golfer).where(Golfer.name.ilike(f"%{normalized}%")),
+                        "normalized-name", name,
+                    )
 
                 if not golfer:
                     logger.debug(f"No DB match for: {name}")

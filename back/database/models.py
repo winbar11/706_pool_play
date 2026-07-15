@@ -82,6 +82,16 @@ class TournamentSetting(Base):
     value: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class AdminAction(Base):
+    __tablename__ = "admin_actions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    admin_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    action: Mapped[str] = mapped_column(Text, nullable=False)
+    detail: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime | None] = mapped_column(TIMESTAMP, server_default=func.current_timestamp())
+
+
 class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
 

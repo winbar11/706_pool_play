@@ -18,7 +18,7 @@ if not SECRET_KEY:
         "a different key, silently invalidating all issued tokens and rejecting "
         "tokens issued by other instances."
     )
-TOKEN_EXPIRE_SECONDS = 60 * 60 * 24 * 7  # 7 days
+TOKEN_EXPIRE_SECONDS = 60 * 60 * 24  # 24 hours — bounds the window a leaked token stays valid
 
 logger = logging.getLogger(__name__)
 

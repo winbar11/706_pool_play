@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
 ## Update
+[0.1.1] - 2026.07.14
+- added security enhacements
+- added consistency to golfer fetching in the API
+- added automated (local) test suite
+- added other enhancements
+
+## Update
 [0.1.0] - 2026.07.07
 - updated to SQLAlchemy for database actions
 - added The Open Championship theme

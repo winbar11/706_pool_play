@@ -1,33 +1,47 @@
+import asyncio
+import json
+
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from typing import List
 from sqlalchemy import delete, update
 from database.db import get_session, to_dict, _seed_golfers, sync_golfer_rankings
-from database.models import Golfer, Team, TournamentSetting, User, team_golfers
+from database.models import AdminAction, Golfer, Team, TournamentSetting, User, team_golfers
 from dependencies import get_admin_user
 from scoring.scoring import calc_golfer_score, calc_all_team_scores
 from scheduler.scheduler import refresh_scores
-import asyncio
 
 router = APIRouter()
 
+
+def _log_action(session, admin_id: int, action: str, detail: dict | None = None):
+    session.add(AdminAction(
+        admin_user_id=admin_id,
+        action=action,
+        detail=json.dumps(detail) if detail is not None else None,
+    ))
+
 @router.post("/lock-teams")
 def lock_teams(authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     with get_session() as session:
         session.get(TournamentSetting, "teams_locked").value = "1"
+        _log_action(session, admin["id"], "lock_teams")
     return {"message": "Teams locked. No more changes allowed."}
 
 @router.post("/unlock-teams")
 def unlock_teams(authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     with get_session() as session:
         session.get(TournamentSetting, "teams_locked").value = "0"
+        _log_action(session, admin["id"], "unlock_teams")
     return {"message": "Teams unlocked."}
 
 @router.post("/refresh-scores")
 async def trigger_refresh(authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
+    with get_session() as session:
+        _log_action(session, admin["id"], "trigger_refresh_scores")
     asyncio.create_task(refresh_scores())
     return {"message": "Score refresh triggered (running in background)"}
 
@@ -45,12 +59,14 @@ def manual_update_golfer(req: ManualGolferUpdate, authorization: str = Header(No
     Manual score entry. Updates round score and total score,
     then recalculates all team final scores.
     """
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
 
     with get_session() as session:
         golfer = session.get(Golfer, req.golfer_id)
         if not golfer:
             raise HTTPException(404, "Golfer not found")
+
+        _log_action(session, admin["id"], "update_golfer", req.model_dump())
 
         r = req.round_num
 
@@ -97,25 +113,28 @@ def list_users(authorization: str = Header(None)):
 
 @router.post("/set-paid")
 def set_paid(user_id: int, paid: bool, authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     with get_session() as session:
         user = session.get(User, user_id)
         if user:
             user.paid = 1 if paid else 0
+        _log_action(session, admin["id"], "set_paid", {"user_id": user_id, "paid": paid})
     return {"message": "Paid status updated"}
 
 @router.post("/set-round")
 def set_round(round_num: int, authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     with get_session() as session:
         session.get(TournamentSetting, "current_round").value = str(round_num)
+        _log_action(session, admin["id"], "set_round", {"round_num": round_num})
     return {"message": f"Current round set to {round_num}"}
 
 @router.post("/set-tournament-complete")
 def set_tournament_complete(complete: bool, authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     with get_session() as session:
         session.get(TournamentSetting, "tournament_complete").value = "1" if complete else "0"
+        _log_action(session, admin["id"], "set_tournament_complete", {"complete": complete})
     return {"message": "Tournament marked complete." if complete else "Tournament marked in-progress."}
 
 class DeleteTeamsRequest(BaseModel):
@@ -123,60 +142,67 @@ class DeleteTeamsRequest(BaseModel):
 
 @router.post("/delete-teams")
 def delete_teams(req: DeleteTeamsRequest, authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     if not req.team_ids:
         raise HTTPException(400, "No team IDs provided")
     with get_session() as session:
         session.execute(delete(team_golfers).where(team_golfers.c.team_id.in_(req.team_ids)))
         result = session.execute(delete(Team).where(Team.id.in_(req.team_ids)))
         deleted = result.rowcount
+        _log_action(session, admin["id"], "delete_teams", {"team_ids": req.team_ids, "deleted_count": deleted})
     return {"message": f"{deleted} team(s) deleted successfully", "deleted_count": deleted}
 
 @router.post("/clear-teams")
 def clear_teams(authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     with get_session() as session:
         session.execute(delete(team_golfers))
         session.execute(delete(Team))
+        _log_action(session, admin["id"], "clear_teams")
     return {"message": "All teams cleared successfully"}
 
 @router.post("/sync-rankings")
 def sync_rankings(authorization: str = Header(None)):
     """Update world_rank, salary, and country from seed data without touching teams."""
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     updated = sync_golfer_rankings()
+    with get_session() as session:
+        _log_action(session, admin["id"], "sync_rankings", {"updated": updated})
     return {"message": f"Rankings synced. {updated} golfer(s) updated.", "updated": updated}
 
 @router.post("/reset-golfers")
 def reset_golfers(authorization: str = Header(None)):
     """Wipe the golfer field and all teams, then re-seed from db.py."""
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     with get_session() as session:
         session.execute(delete(team_golfers))
         session.execute(delete(Team))
         session.execute(delete(Golfer))
+        _log_action(session, admin["id"], "reset_golfers")
     _seed_golfers()
     return {"message": "Golfer field reset and re-seeded. All teams cleared."}
 
 @router.post("/set-theme")
 def set_theme(theme: str, authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     if theme not in ("masters", "us-open", "open-championship"):
         raise HTTPException(400, "Invalid theme. Must be 'masters', 'us-open', or 'open-championship'")
     with get_session() as session:
         session.get(TournamentSetting, "theme").value = theme
+        _log_action(session, admin["id"], "set_theme", {"theme": theme})
     return {"message": f"Theme set to {theme}", "theme": theme}
 
 @router.post("/set-pot")
 def set_pot(amount: int, authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     with get_session() as session:
         session.get(TournamentSetting, "pot_amount").value = str(amount)
+        _log_action(session, admin["id"], "set_pot", {"amount": amount})
     return {"message": f"Pot amount set to ${amount}"}
 
 @router.post("/clear-scores")
 def clear_scores(authorization: str = Header(None)):
-    get_admin_user(authorization=authorization)
+    admin = get_admin_user(authorization=authorization)
     with get_session() as session:
         session.execute(update(Golfer).values(
             current_round=0,
@@ -193,4 +219,27 @@ def clear_scores(authorization: str = Header(None)):
             solo_leader_r4=0,
         ))
         session.execute(update(Team).values(final_score=0, bonus_shots=0, dk_total_points=0))
+        _log_action(session, admin["id"], "clear_scores")
     return {"message": "All scores cleared successfully"}
+
+@router.get("/actions")
+def list_admin_actions(limit: int = 100, authorization: str = Header(None)):
+    get_admin_user(authorization=authorization)
+    with get_session() as session:
+        rows = (
+            session.query(AdminAction, User.username)
+            .join(User, User.id == AdminAction.admin_user_id)
+            .order_by(AdminAction.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+        return {"actions": [
+            {
+                "id": action.id,
+                "admin_username": username,
+                "action": action.action,
+                "detail": json.loads(action.detail) if action.detail else None,
+                "created_at": action.created_at,
+            }
+            for action, username in rows
+        ]}
