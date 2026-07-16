@@ -138,10 +138,10 @@ export default function WelcomePage() {
           Team Rules
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          <RuleRow icon="👥" label="Golfers per team"  value="Exactly 6 golfers" />
-          <RuleRow icon="💰" label="Salary cap"        value="$50,000 total" />
-          <RuleRow icon="👤" label="Entries per person" value="1 team per account" />
-          <RuleRow icon="🔒" label="Lock time"         value="Thursday, 7:30am EST" />
+          <RuleRow label="Golfers per team"  value="Exactly 6 golfers" />
+          <RuleRow label="Salary cap"        value="$50,000 total" />
+          <RuleRow label="Entries per person" value="1 team per account" />
+          <RuleRow label="Lock time"         value="Thursday, 7:30am EST" />
         </div>
       </div>
 
@@ -151,13 +151,13 @@ export default function WelcomePage() {
           Good to Know
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          <RuleRow icon="🏆" label="Lowest combined score wins" value="Stroke play, not fantasy points" />
-          <RuleRow icon="📊" label="Budget wisely" value="Better golfers cost more cap space" />
-          <RuleRow icon="⭐" label="Best round of the day" value="−1 shot bonus (unique only)" />
-          <RuleRow icon="🥇" label="Solo round leader" value="−1 shot per round led" />
-          <RuleRow icon="🎯" label="Pick the winner" value="−5 shot bonus" />
-          <RuleRow icon="✂️" label="Missed cut / WD" value="+8 shot penalty" />
-          <RuleRow icon="🔄" label="Score updates" value="Refreshed throughout each round" />
+          <RuleRow label="Lowest combined score wins" value="Stroke play, not fantasy points" />
+          <RuleRow label="Budget wisely" value="Better golfers cost more cap space" />
+          <RuleRow label="Best round of the day" value="−1 shot bonus (unique only)" />
+          <RuleRow label="Solo round leader" value="−1 shot per round led" />
+          <RuleRow label="Pick the winner" value="−5 shot bonus" />
+          <RuleRow label="Missed cut / WD" value="+8 shot penalty" />
+          <RuleRow label="Score updates" value="Refreshed throughout each round" />
         </div>
         {user && (
           <p style={{ marginTop: "1rem", fontSize: "0.85rem", color: "var(--text-muted)" }}>
@@ -236,7 +236,7 @@ function PayoutRow({ place, label, value, gold, silver }) {
   );
 }
 
-function RuleRow({ icon, label, value }) {
+function RuleRow({ label, value }) {
   return (
     <div style={{
       display: "flex",
@@ -248,7 +248,6 @@ function RuleRow({ icon, label, value }) {
       gap: "0.5rem",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
-        <span style={{ fontSize: "1rem", flexShrink: 0 }}>{icon}</span>
         <span style={{ fontSize: "0.9rem", color: "var(--text-primary)" }}>{label}</span>
       </div>
       <span style={{
