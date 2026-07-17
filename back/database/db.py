@@ -69,6 +69,9 @@ def init_db():
         conn.execute(text(
             "INSERT INTO tournament_settings (key, value) VALUES ('theme', 'masters') ON CONFLICT (key) DO NOTHING"
         ))
+        conn.execute(text(
+            "INSERT INTO tournament_settings (key, value) VALUES ('course_par', '72') ON CONFLICT (key) DO NOTHING"
+        ))
 
     _seed_golfers()
 

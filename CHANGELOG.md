@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on Keep a Changelog and this project adheres to Semantic Versioning.
 
 ## Update
+[0.2.0] - 2026.07.17
+- backend scoring fix:
+  - fixed courses set par to be dynamically pulled by API
+  - was hardcoded at 72 showing incorrect scores
+
+## Update
 [0.1.1] - 2026.07.16
 - UI bug fixes
 
