@@ -113,6 +113,19 @@ def parse_leaderboard(data: dict) -> list[dict]:
     logger.info(f"Parsed {len(players)} players from ESPN leaderboard")
     return players
 
+def parse_course_par(data: dict) -> Optional[int]:
+    """Total par for the host course (e.g. 70 or 71) — NOT always 72."""
+    try:
+        events = data.get("events", [])
+        if not events:
+            return None
+        for course in events[0].get("courses", []):
+            if course.get("host") and course.get("shotsToPar") is not None:
+                return int(course["shotsToPar"])
+    except Exception as e:
+        logger.error(f"Parse course par error: {e}", exc_info=True)
+    return None
+
 def _parse_position(pos: str) -> Optional[int]:
     if not pos or pos in ("-", "--", "0"):
         return None

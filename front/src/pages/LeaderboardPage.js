@@ -12,7 +12,7 @@ function fmtScore(score) {
   return score > 0 ? `+${score}` : `${score}`;
 }
 
-function fmtRound(golfers, roundNum) {
+function fmtRound(golfers, roundNum, coursePar) {
   const roundKey = `round${roundNum}_score`;
   let total = 0;
   let hasScore = false;
@@ -31,13 +31,13 @@ function fmtRound(golfers, roundNum) {
         .filter(r => r < roundNum)
         .reduce((acc, r) => {
           const rs = g[`round${r}_score`];
-          return (rs !== null && rs !== undefined && rs >= 60) ? acc + (rs - 72) : acc;
+          return (rs !== null && rs !== undefined && rs >= 60) ? acc + (rs - coursePar) : acc;
         }, 0);
       total += (g.total_score ?? 0) - prevRoundsPar;
       hasScore = true;
     } else if (s !== null && s !== undefined && s >= 60) {
       // Completed round: convert stroke total to score-to-par
-      total += s - 72;
+      total += s - coursePar;
       hasScore = true;
     }
   }
@@ -82,6 +82,7 @@ export default function LeaderboardPage() {
 
   const { teams = [], settings = {} } = data;
   const currentRound = parseInt(settings.current_round) || 0;
+  const coursePar = parseInt(settings.course_par) || 72;
   const isLocked = settings.teams_locked === "1";
   const isTournamentComplete = settings.tournament_complete === "1";
 
@@ -105,10 +106,10 @@ export default function LeaderboardPage() {
             </div>
             <div className="owner">@{team.username}</div>
           </td>
-          <td className={`dk-points-small col-round ${currentRound <= 1 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 1)}</td>
-          <td className={`dk-points-small col-round ${currentRound === 2 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 2)}</td>
-          <td className={`dk-points-small col-round ${currentRound === 3 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 3)}</td>
-          <td className={`dk-points-small col-round ${currentRound === 4 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 4)}</td>
+          <td className={`dk-points-small col-round ${currentRound <= 1 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 1, coursePar)}</td>
+          <td className={`dk-points-small col-round ${currentRound === 2 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 2, coursePar)}</td>
+          <td className={`dk-points-small col-round ${currentRound === 3 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 3, coursePar)}</td>
+          <td className={`dk-points-small col-round ${currentRound === 4 ? "col-round-current" : ""}`}>{fmtRound(team.golfers, 4, coursePar)}</td>
           <td className="dk-points-small" style={{
             color: bonusShots < 0 ? "var(--green-600)" : "var(--text-muted)",
             fontWeight: bonusShots < 0 ? "600" : "400"
@@ -117,7 +118,7 @@ export default function LeaderboardPage() {
           </td>
           <td className="dk-points" style={{
             color: finalScore !== null && finalScore < 0
-              ? "var(--gold-200)"
+              ? "#b91c1c"
               : finalScore !== null && finalScore > 0
               ? "var(--green-600)"
               : "var(--text-muted)"
@@ -220,7 +221,7 @@ export default function LeaderboardPage() {
       <div className="page-header">
         <h1>Pool Leaderboard</h1>
         <p>
-          {teams.length} {teams.length === 1 ? "entry" : "entries"} · Lowest score wins · Scores are updated every 15min from 8am-8pm EST
+          {teams.length} {teams.length === 1 ? "entry" : "entries"} · Lowest score wins · Scores are updated every 15min from 5am-5pm EST
         </p>
       </div>
 

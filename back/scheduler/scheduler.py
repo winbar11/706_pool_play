@@ -4,7 +4,7 @@ import unicodedata
 from sqlalchemy import select, update
 from database.db import get_session, to_dict
 from database.models import Golfer, Team, TournamentSetting
-from clients.espn_client import fetch_leaderboard, parse_leaderboard
+from clients.espn_client import fetch_leaderboard, parse_leaderboard, parse_course_par
 from scoring.scoring import calc_all_team_scores
 
 logger = logging.getLogger(__name__)
@@ -55,6 +55,8 @@ async def refresh_scores():
         if not players:
             logger.warning("No players parsed")
             return
+
+        course_par = parse_course_par(lb_data)
 
         logger.info(f"Processing {len(players)} players from ESPN")
         matched = 0
@@ -116,6 +118,11 @@ async def refresh_scores():
                     setattr(golfer, k, v)
 
             logger.info(f"Matched and updated {matched}/{len(players)} players")
+
+            if course_par is not None:
+                par_row = session.get(TournamentSetting, "course_par")
+                if par_row is not None:
+                    par_row.value = str(course_par)
 
             # ── Step 2: Determine solo leaders after each round ──
             session.execute(update(Golfer).values(
